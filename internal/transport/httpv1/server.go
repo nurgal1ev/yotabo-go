@@ -1,4 +1,4 @@
-package rest
+package httpv1
 
 import (
 	"github.com/go-chi/chi/v5"

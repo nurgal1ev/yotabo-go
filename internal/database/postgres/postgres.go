@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"github.com/nurgal1ev/yotabo-go/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
@@ -15,7 +16,11 @@ func NewDatabaseConnection() {
 		log.Fatal("Failed to connect to database:", err)
 	}
 
-	err = Db.AutoMigrate()
+	err = Db.AutoMigrate(
+		&models.User{},
+		&models.Task{},
+	)
+
 	if err != nil {
 		log.Fatal("Failed to migrate database:", err)
 	}

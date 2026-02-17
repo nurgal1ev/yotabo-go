@@ -1,7 +1,11 @@
 package main
 
-import "github.com/nurgal1ev/yotabo-go/internal/transport/rest"
+import (
+	"github.com/nurgal1ev/yotabo-go/internal/database/postgres"
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1"
+)
 
 func main() {
-	rest.StartServer()
+	postgres.NewDatabaseConnection()
+	httpv1.StartServer()
 }

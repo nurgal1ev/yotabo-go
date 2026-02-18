@@ -7,23 +7,19 @@ import (
 	"log"
 )
 
+var Db *gorm.DB
+
 func NewDatabaseConnection() {
 	var err error
-
 	dsn := "postgres://postgres:password@localhost:5432/mydb?sslmode=disable"
-	Db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Failed to connect to database:", err)
+		panic(err)
 	}
 
-	err = Db.AutoMigrate(
-		&models.User{},
-		&models.Task{},
-	)
-
+	err = Db.AutoMigrate(&models.User{}, &models.Task{})
 	if err != nil {
-		log.Fatal("Failed to migrate database:", err)
+		return
 	}
-
 	log.Println("Successfully connected to database")
 }

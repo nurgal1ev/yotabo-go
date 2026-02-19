@@ -1,99 +1,94 @@
 package user
 
 import (
-	"encoding/json"
+	"context"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
 	"github.com/nurgal1ev/yotabo-go/internal/models"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 	"os"
 	"time"
 )
 
-type UserData struct {
-	FirstName string `json:"firstname"`
-	LastName  string `json:"lastname"`
-	Username  string `json:"username"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
+type RegisterInput struct {
+	Body struct {
+		FirstName string `json:"firstname" minLength:"1" maxLength:"50" pattern:"^[\\p{L}]+$"`
+		LastName  string `json:"lastname"  minLength:"1" maxLength:"50" pattern:"^[\\p{L}]+$"`
+		Username  string `json:"username"  minLength:"3" maxLength:"12"`
+		Email     string `json:"email"     format:"email"`
+		Password  string `json:"password"  minLength:"7" maxLength:"12"`
+	}
 }
 
-type LoginResponse struct {
-	AccessToken string `json:"access_token"`
+type RegisterOutput struct {
+	Body struct {
+		Message string `json:"message"`
+	}
+}
+
+type LoginInput struct {
+	Body struct {
+		Username string `json:"username" minLength:"3" maxLength:"12"`
+		Password string `json:"password" minLength:"7" maxLength:"12"`
+	}
+}
+
+type LoginOutput struct {
+	Body struct {
+		AccessToken string `json:"accessToken"`
+	}
 }
 
 var secretKey = os.Getenv("AUTH_TOKEN")
 
 // TODO: /api/v1/auth/register
-func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
+func RegisterHandler(ctx context.Context, input *RegisterInput) (*RegisterOutput, error) {
 
-	var data UserData
-	err := json.NewDecoder(r.Body).Decode(&data)
+	hashedPassword, err := bcrypt.GenerateFromPassword(
+		[]byte(input.Body.Password),
+		bcrypt.DefaultCost,
+	)
 	if err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), bcrypt.DefaultCost)
-	if err != nil {
-		http.Error(w, "failed to hash password", http.StatusInternalServerError)
-		return
+		return nil, huma.Error500InternalServerError("failed to hash password")
 	}
 
 	user := models.User{
-		FirstName: data.FirstName,
-		LastName:  data.LastName,
-		Username:  data.Username,
-		Email:     data.Email,
+		FirstName: input.Body.FirstName,
+		LastName:  input.Body.LastName,
+		Username:  input.Body.Username,
+		Email:     input.Body.Email,
 		Password:  string(hashedPassword),
 	}
 
-	result := postgres.Db.Create(&user)
-	if result.Error != nil {
-		http.Error(w, "failed to create user", http.StatusInternalServerError)
-		return
+	if err := postgres.Db.Create(&user).Error; err != nil {
+		return nil, huma.Error500InternalServerError("failed to create user")
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]string{
-		"message": "successful registration",
-	})
+	resp := &RegisterOutput{}
+	resp.Body.Message = "successful registration"
+
+	return resp, nil
 }
 
 // TODO: /api/v1/auth/login
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var data UserData
-	err := json.NewDecoder(r.Body).Decode(&data)
-	if err != nil {
-		http.Error(w, "invalid request body", http.StatusBadRequest)
-		return
-	}
+func LoginHandler(ctx context.Context, input *LoginInput) (*LoginOutput, error) {
 
 	var user models.User
-	username := postgres.Db.Where("username = ?", data.Username).First(&user)
-	if username.Error != nil {
-		http.Error(w, "invalid credentials", http.StatusUnauthorized)
-		return
+
+	if err := postgres.Db.
+		Where("username = ?", input.Body.Username).
+		First(&user).Error; err != nil {
+
+		return nil, huma.Error401Unauthorized("invalid credentials")
 	}
 
-	err = bcrypt.CompareHashAndPassword(
+	if err := bcrypt.CompareHashAndPassword(
 		[]byte(user.Password),
-		[]byte(data.Password),
-	)
-	if err != nil {
-		http.Error(w, "invalid credentials", http.StatusUnauthorized)
-		return
+		[]byte(input.Body.Password),
+	); err != nil {
+
+		return nil, huma.Error401Unauthorized("invalid credentials")
 	}
 
 	payload := jwt.MapClaims{
@@ -102,19 +97,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
+
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
-		http.Error(w, "failed to generate token", http.StatusInternalServerError)
-		return
+		return nil, huma.Error500InternalServerError("failed to generate token")
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	resp := &LoginOutput{}
+	resp.Body.AccessToken = tokenString
 
-	marshal, err := json.Marshal(LoginResponse{AccessToken: tokenString})
-	if err != nil {
-		return
-	}
-
-	w.Write(marshal)
+	return resp, nil
 }

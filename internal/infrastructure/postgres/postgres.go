@@ -9,11 +9,10 @@ import (
 
 var Db *gorm.DB
 
-func NewDatabaseConnection() {
+func NewDatabaseConnection(cfg Config) {
 	var err error
 
-	dsn := "host=localhost user=postgres password=123456 dbname=mydb port=5432 sslmode=disable"
-	Db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	Db, err = gorm.Open(postgres.Open(cfg.URI()), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}

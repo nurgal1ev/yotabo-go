@@ -1,0 +1,47 @@
+version: "3.8"
+
+name: "yotabo-go"
+
+x-postgres-env: &postgres-env
+  POSTGRES_USER: "admin"
+  POSTGRES_HOST: "postgres"
+  POSTGRES_PORT: "5432"
+  POSTGRES_PASSWORD: "admin"
+  POSTGRES_DB: "local_db"
+
+x-app-env: &app-env
+  <<: [*postgres-env]
+
+  APP_AUTH_TOKEN: "development"
+
+
+services:
+  app:
+    build:
+      context: ../
+      dockerfile: ./deployment/Dockerfile
+      target: runner_dev
+    volumes:
+      - ../:/app
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      <<: *app-env
+    depends_on:
+      - postgres
+    networks:
+      - default
+
+  postgres:
+    image: postgres:17
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      <<: *postgres-env
+    networks:
+      - default
+
+volumes:
+  postgres_data:

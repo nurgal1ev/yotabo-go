@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	config.Load()
-	postgres.NewDatabaseConnection()
+	cfg := config.Load()
+	postgres.NewDatabaseConnection(cfg.Postgres)
 	httpv1.StartServer()
 }

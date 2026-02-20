@@ -1,0 +1,12 @@
+root = "."
+tmp_dir = "build"
+
+[build]
+  cmd = "go build -o ./build/app ./cmd/app"
+  bin = "build/app"
+  include_ext = ["go"]
+  delay = 1000
+  log = "stdout"
+
+[log]
+  time = true

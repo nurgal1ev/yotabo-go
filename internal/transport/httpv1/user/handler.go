@@ -40,7 +40,7 @@ type LoginOutput struct {
 	}
 }
 
-var secretKey = os.Getenv("AUTH_TOKEN")
+var secretKey = []byte(os.Getenv("JWT_SECRET"))
 
 // TODO: /api/v1/auth/register
 func RegisterHandler(ctx context.Context, input *RegisterInput) (*RegisterOutput, error) {

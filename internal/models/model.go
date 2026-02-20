@@ -13,7 +13,7 @@ type User struct {
 	Password  string //TODO: длина: мин 7, макс 12, разрешены все символы
 	Avatar    *string
 
-	Tasks []Task
+	Tasks []Task `gorm:"foreignKey:CreatedByID"`
 }
 
 type Task struct {
@@ -23,6 +23,9 @@ type Task struct {
 	Status      string //TODO: валидация статуса backlog | in_progress | review | done
 	Priority    string //TODO: валидация статуса easy | medium | hard
 
-	CreatedBy User
-	UpdatedBy *User
+	CreatedByID uint
+	CreatedBy   User `gorm:"foreignKey:CreatedByID"`
+
+	UpdatedByID uint
+	UpdatedBy   *User `gorm:"foreignKey:UpdatedByID"`
 }

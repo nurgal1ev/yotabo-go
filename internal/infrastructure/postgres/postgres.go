@@ -11,7 +11,6 @@ var Db *gorm.DB
 
 func NewDatabaseConnection(cfg Config) {
 	var err error
-
 	Db, err = gorm.Open(postgres.Open(cfg.URI()), &gorm.Config{})
 	if err != nil {
 		panic(err)

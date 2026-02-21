@@ -10,7 +10,7 @@ type Config struct {
 	Database string `env:"POSTGRES_DB"`
 }
 
-func (cfg *Config) URI() string {
+func (cfg Config) URI() string {
 	return fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		cfg.User,
@@ -19,5 +19,16 @@ func (cfg *Config) URI() string {
 		cfg.Port,
 		cfg.Database,
 		"disable",
+	)
+}
+
+func (cfg Config) DSN() string {
+	return fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		cfg.Host,
+		cfg.User,
+		cfg.Password,
+		cfg.Database,
+		cfg.Port,
 	)
 }

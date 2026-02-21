@@ -1,10 +1,13 @@
-package tasks
+package task
 
 import (
 	"context"
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
 	"github.com/nurgal1ev/yotabo-go/internal/models"
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
 	"gorm.io/gorm"
+	"log/slog"
+	"net/http"
 )
 
 type TaskResponse struct {
@@ -16,7 +19,7 @@ type TaskResponse struct {
 	}
 }
 type CreateTaskOutput struct {
-	Status int `status:"201"`
+	Status int
 	Body   struct {
 		Message string `json:"message"`
 	}
@@ -33,18 +36,27 @@ type GetTaskOutput struct {
 }
 
 func CreateTaskHandler(ctx context.Context, input *TaskResponse) (*CreateTaskOutput, error) {
+	userID := middleware.GetUserID(ctx)
+
 	err := gorm.G[models.Task](postgres.Db).Create(ctx, &models.Task{
 		Name:        input.Body.Name,
 		Description: input.Body.Description,
 		Status:      input.Body.Status,
 		Priority:    input.Body.Priority,
+		CreatedByID: uint(userID),
+		UpdatedByID: uint(userID),
 	})
 
 	if err != nil {
+		slog.Error("failed create task", slog.String("error", err.Error()))
 		return nil, err
 	}
 
-	return &CreateTaskOutput{}, nil
+	return &CreateTaskOutput{
+		Status: http.StatusCreated,
+		Body: struct {
+			Message string `json:"message"`
+		}{Message: "success"}}, nil
 }
 
 /*func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*GetTaskOutput, error) {

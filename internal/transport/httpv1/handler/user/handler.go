@@ -4,52 +4,24 @@ import (
 	"context"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/nurgal1ev/yotabo-go/internal/config"
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
 	"github.com/nurgal1ev/yotabo-go/internal/models"
 	"golang.org/x/crypto/bcrypt"
-	"os"
+	"log/slog"
 	"time"
 )
 
-type RegisterInput struct {
-	Body struct {
-		FirstName string `json:"firstname" minLength:"1" maxLength:"50" pattern:"^[\\p{L}]+$"`
-		LastName  string `json:"lastname"  minLength:"1" maxLength:"50" pattern:"^[\\p{L}]+$"`
-		Username  string `json:"username"  minLength:"3" maxLength:"12"`
-		Email     string `json:"email"     format:"email"`
-		Password  string `json:"password"  minLength:"7" maxLength:"12"`
-	}
-}
-
-type RegisterOutput struct {
-	Body struct {
-		Message string `json:"message"`
-	}
-}
-
-type LoginInput struct {
-	Body struct {
-		Username string `json:"username" minLength:"3" maxLength:"12"`
-		Password string `json:"password" minLength:"7" maxLength:"12"`
-	}
-}
-
-type LoginOutput struct {
-	Body struct {
-		AccessToken string `json:"accessToken"`
-	}
-}
-
-var secretKey = []byte(os.Getenv("JWT_SECRET"))
-
-// TODO: /api/v1/auth/register
 func RegisterHandler(ctx context.Context, input *RegisterInput) (*RegisterOutput, error) {
-
 	hashedPassword, err := bcrypt.GenerateFromPassword(
 		[]byte(input.Body.Password),
 		bcrypt.DefaultCost,
 	)
 	if err != nil {
+		slog.Error(
+			"failed generate hash from password",
+			slog.String("error", err.Error()),
+		)
 		return nil, huma.Error500InternalServerError("failed to hash password")
 	}
 
@@ -61,7 +33,9 @@ func RegisterHandler(ctx context.Context, input *RegisterInput) (*RegisterOutput
 		Password:  string(hashedPassword),
 	}
 
-	if err := postgres.Db.Create(&user).Error; err != nil {
+	err = postgres.Db.Create(&user).Error
+	if err != nil {
+		slog.Error("failed create user", slog.String("error", err.Error()))
 		return nil, huma.Error500InternalServerError("failed to create user")
 	}
 
@@ -71,35 +45,37 @@ func RegisterHandler(ctx context.Context, input *RegisterInput) (*RegisterOutput
 	return resp, nil
 }
 
-// TODO: /api/v1/auth/login
 func LoginHandler(ctx context.Context, input *LoginInput) (*LoginOutput, error) {
-
 	var user models.User
 
-	if err := postgres.Db.
-		Where("username = ?", input.Body.Username).
-		First(&user).Error; err != nil {
-
+	err := postgres.Db.Where("username = ?", input.Body.Username).First(&user).Error
+	if err != nil {
+		slog.Error(
+			"failed get user by username",
+			slog.String("error", err.Error()),
+			slog.String("username", input.Body.Username),
+		)
 		return nil, huma.Error401Unauthorized("invalid credentials")
 	}
 
-	if err := bcrypt.CompareHashAndPassword(
+	err = bcrypt.CompareHashAndPassword(
 		[]byte(user.Password),
 		[]byte(input.Body.Password),
-	); err != nil {
-
+	)
+	if err != nil {
 		return nil, huma.Error401Unauthorized("invalid credentials")
 	}
 
 	payload := jwt.MapClaims{
-		"sub": user.ID,
-		"exp": time.Now().Add(time.Hour * 72).Unix(),
+		"user_id": user.ID,
+		"exp":     time.Now().Add(time.Hour * 72).Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, payload)
 
-	tokenString, err := token.SignedString(secretKey)
+	tokenString, err := token.SignedString([]byte(config.Load().App.AuthToken))
 	if err != nil {
+		slog.Error("failed generate token", slog.String("error", err.Error()))
 		return nil, huma.Error500InternalServerError("failed to generate token")
 	}
 

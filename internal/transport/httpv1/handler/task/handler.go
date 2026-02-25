@@ -2,6 +2,9 @@ package task
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
 	"github.com/nurgal1ev/yotabo-go/internal/models"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
@@ -9,31 +12,6 @@ import (
 	"log/slog"
 	"net/http"
 )
-
-type TaskResponse struct {
-	Body struct {
-		Name        string `json:"name" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
-		Description string `json:"description" maxLength:"10000" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
-		Status      string `json:"status" enum:"backlog,in_progress,review,done"`
-		Priority    string `json:"priority" enum:"easy,medium,hard"`
-	}
-}
-type CreateTaskOutput struct {
-	Status int
-	Body   struct {
-		Message string `json:"message"`
-	}
-}
-
-type GetTaskInput struct {
-	Params struct {
-		ID uint `path:"id"` // {id} в URL
-	}
-}
-type GetTaskOutput struct {
-	Status int `status:"201"`
-	Body   TaskResponse
-}
 
 func CreateTaskHandler(ctx context.Context, input *TaskResponse) (*CreateTaskOutput, error) {
 	userID := middleware.GetUserID(ctx)
@@ -59,19 +37,96 @@ func CreateTaskHandler(ctx context.Context, input *TaskResponse) (*CreateTaskOut
 		}{Message: "success"}}, nil
 }
 
-/*func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*GetTaskOutput, error) {
-	task, err := tasks.GetTask(ctx, input.Params.ID)
+func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*GetTaskOutput, error) {
+	task, err := gorm.G[models.Task](postgres.Db).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
-		return nil, huma.Error400BadRequest(err.Error())
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, huma.Error404NotFound("task not found")
+		}
+		slog.Error("failed get task", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError(err.Error())
 	}
 
+	fmt.Println(task)
+
 	return &GetTaskOutput{
-		Status: 200,
+		Status: http.StatusOK,
 		Body: TaskResponse{
-			Name:        task.Name,
-			Description: task.Description,
-			Status:      task.Status,
-			Priority:    task.Priority,
+			Body: TaskDTO{
+				Name:        task.Name,
+				Description: task.Description,
+				Status:      task.Status,
+				Priority:    task.Priority,
+			},
 		},
 	}, nil
-}*/
+}
+
+func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*UpdateTaskOutput, error) {
+	userID := middleware.GetUserID(ctx)
+	task, err := gorm.G[models.Task](postgres.Db).Where("id = ?", input.ID).First(ctx)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, huma.Error404NotFound("task not found")
+		}
+		return nil, err
+	}
+
+	if userID == 0 {
+		return nil, huma.Error401Unauthorized("unauthorized")
+	}
+
+	if input.Body.Name != nil {
+		task.Name = *input.Body.Name
+	}
+	if input.Body.Description != nil {
+		task.Description = *input.Body.Description
+	}
+	if input.Body.Status != nil {
+		task.Status = *input.Body.Status
+	}
+	if input.Body.Priority != nil {
+		task.Priority = *input.Body.Priority
+	}
+
+	_, err = gorm.G[models.Task](postgres.Db).
+		Where("id = ?", input.ID).
+		Updates(ctx, task)
+
+	if err != nil {
+		return nil, huma.Error500InternalServerError(err.Error())
+	}
+
+	return &UpdateTaskOutput{
+		Status: http.StatusOK,
+		Body: TaskResponse{
+			Body: TaskDTO{
+				Name:        task.Name,
+				Description: task.Description,
+				Status:      task.Status,
+				Priority:    task.Priority,
+			},
+		},
+	}, nil
+}
+
+func DeleteTaskHandler(ctx context.Context, input *DeleteTaskInput) (*DeleteTaskOutput, error) {
+	userID := middleware.GetUserID(ctx)
+
+	if userID == 0 {
+		return nil, huma.Error401Unauthorized("unauthorized")
+	}
+
+	taskID := input.ID
+
+	result := postgres.Db.Delete(&models.Task{}, "id = ? AND created_by_id = ?", taskID, userID)
+
+	if result.Error != nil {
+		return nil, result.Error
+	}
+
+	return &DeleteTaskOutput{
+		Status:  http.StatusOK,
+		Message: "task deleted successfully",
+	}, nil
+}

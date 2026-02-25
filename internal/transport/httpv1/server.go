@@ -41,7 +41,34 @@ func StartServer() {
 		Tags:    []string{"Task"},
 		Summary: "Create task",
 	}, task.CreateTaskHandler)
-	//huma.Get(api, "/api/v1/tasks/", tasks.GetTaskHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodGet,
+		Path:    "/tasks/{id}",
+		Tags:    []string{"Task"},
+		Summary: "Get task",
+	}, task.GetTaskHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodPut,
+		Path:    "/tasks/{id}",
+		Tags:    []string{"Task"},
+		Summary: "Update task",
+	}, task.UpdateTaskHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodDelete,
+		Path:    "/tasks/{id}",
+		Tags:    []string{"Task"},
+		Summary: "Delete task",
+	}, task.DeleteTaskHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodGet,
+		Path:    "/tasks",
+		Tags:    []string{"Task"},
+		Summary: "Get all task",
+	}, task.GetAllTasks)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		panic(err)

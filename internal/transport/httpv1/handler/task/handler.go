@@ -3,7 +3,6 @@ package task
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
 	"github.com/nurgal1ev/yotabo-go/internal/models"
@@ -46,8 +45,6 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*GetTaskOutput, e
 		slog.Error("failed get task", slog.String("error", err.Error()))
 		return nil, huma.Error500InternalServerError(err.Error())
 	}
-
-	fmt.Println(task)
 
 	return &GetTaskOutput{
 		Status: http.StatusOK,

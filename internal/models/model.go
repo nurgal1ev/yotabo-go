@@ -29,3 +29,11 @@ type Task struct {
 	UpdatedByID uint
 	UpdatedBy   *User `gorm:"foreignKey:UpdatedByID"`
 }
+
+type Board struct {
+	gorm.Model
+	Name        string
+	Description string
+	CreatedByID uint
+	CreatedBy   User
+}

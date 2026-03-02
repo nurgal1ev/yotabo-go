@@ -7,6 +7,7 @@ tmp_dir = "build"
   include_ext = ["go"]
   delay = 1000
   log = "stdout"
+  poll = true
 
 [log]
   time = true

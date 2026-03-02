@@ -9,7 +9,7 @@ type BoardDTO struct {
 }
 
 type CreateBoardOutput struct {
-	Status int `status:"201"`
+	Status int
 	Body   struct {
 		Message string `json:"message"`
 	}
@@ -20,7 +20,7 @@ type GetBoardInput struct {
 }
 
 type GetBoardOutput struct {
-	Status int `status:"200"`
+	Status int
 	Body   BoardResponse
 }
 
@@ -29,6 +29,6 @@ type DeleteBoardInput struct {
 }
 
 type DeleteBoardOutput struct {
-	Status  int `status:"201"`
+	Status  int
 	Message string
 }

@@ -63,13 +63,6 @@ func StartServer() {
 		Summary: "Delete task",
 	}, task.DeleteTaskHandler)
 
-	huma.Register(router, huma.Operation{
-		Method:  http.MethodGet,
-		Path:    "/tasks",
-		Tags:    []string{"Task"},
-		Summary: "Get all task",
-	}, task.GetAllTasks)
-
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		panic(err)
 	}

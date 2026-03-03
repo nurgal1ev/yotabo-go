@@ -15,12 +15,12 @@ import (
 func StartServer() {
 	r := chi.NewMux()
 
-	cors.New(cors.Options{
+	r.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   config.Load().App.AllowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"*"},
 		AllowCredentials: false,
-	})
+	}))
 
 	humaCfg := huma.DefaultConfig("Yotabo API", "1.0.0")
 	humaCfg.Components.SecuritySchemes = map[string]*huma.SecurityScheme{

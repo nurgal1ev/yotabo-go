@@ -13,6 +13,7 @@ x-app-env: &app-env
   <<: [*postgres-env]
 
   APP_AUTH_TOKEN: "development"
+  APP_ALLOWED_ORIGINS: "http://localhost:5173"
 
 
 services:

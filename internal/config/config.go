@@ -13,7 +13,8 @@ type Config struct {
 }
 
 type AppConfig struct {
-	AuthToken string `env:"APP_AUTH_TOKEN" env-required:"true"`
+	AuthToken      string   `env:"APP_AUTH_TOKEN" env-required:"true"`
+	AllowedOrigins []string `env:"ALLOWED_ORIGINS" env-required:"true"`
 }
 
 var (

@@ -4,6 +4,8 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/cors"
+	"github.com/nurgal1ev/yotabo-go/internal/config"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/task"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/user"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
@@ -12,6 +14,13 @@ import (
 
 func StartServer() {
 	r := chi.NewMux()
+
+	cors.New(cors.Options{
+		AllowedOrigins:   config.Load().App.AllowedOrigins,
+		AllowedMethods:   []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowedHeaders:   []string{"*"},
+		AllowCredentials: false,
+	})
 
 	humaCfg := huma.DefaultConfig("Yotabo API", "1.0.0")
 	humaCfg.Components.SecuritySchemes = map[string]*huma.SecurityScheme{

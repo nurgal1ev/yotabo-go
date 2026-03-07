@@ -6,6 +6,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
 	"github.com/nurgal1ev/yotabo-go/internal/config"
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/board"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/task"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/user"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
@@ -71,6 +72,20 @@ func StartServer() {
 		Tags:    []string{"Task"},
 		Summary: "Delete task",
 	}, task.DeleteTaskHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodPost,
+		Path:    "/boards",
+		Tags:    []string{"Board"},
+		Summary: "Create board",
+	}, board.CreateBoardHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodDelete,
+		Path:    "/boards{id}",
+		Tags:    []string{"Board"},
+		Summary: "Delete board",
+	}, board.DeleteBoardHandler)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		panic(err)

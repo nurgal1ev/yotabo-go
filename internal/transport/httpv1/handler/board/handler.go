@@ -33,6 +33,7 @@ func CreateBoardHandler(ctx context.Context, input *BoardResponse) (*CreateBoard
 	}, nil
 }
 
+// TODO: сделать GET-хендлеры для получения
 func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*GetBoardOutput, error) {
 	board, err := gorm.G[models.Board](postgres.Db).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
@@ -49,6 +50,32 @@ func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*GetBoardOutput
 			Body: BoardDTO{
 				Name: board.Name,
 			},
+		},
+	}, nil
+}
+
+func GetAllBoardsHandler(ctx context.Context, input *GetAllBoardsInput) (*GetAllBoardsOutput, error) {
+	userID := middleware.GetUserID(ctx)
+
+	boards, err := gorm.G[models.Board](postgres.Db).Where("created_by_id = ?", userID).Find(ctx)
+	if err != nil {
+		slog.Error("failed get all boards", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError(err.Error())
+	}
+
+	boardDTOs := make([]BoardDTO, len(boards))
+	for i, board := range boards {
+		boardDTOs[i] = BoardDTO{
+			Name: board.Name,
+		}
+	}
+
+	return &GetAllBoardsOutput{
+		Status: http.StatusOK,
+		Body: struct {
+			Boards []BoardDTO `json:"boards"`
+		}{
+			Boards: boardDTOs,
 		},
 	}, nil
 }

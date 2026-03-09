@@ -24,6 +24,14 @@ type GetBoardOutput struct {
 	Body   BoardResponse
 }
 
+type GetAllBoardsInput struct{}
+
+type GetAllBoardsOutput struct {
+	Status int
+	Body   struct {
+		Boards []BoardDTO `json:"boards"`
+	}
+}
 type DeleteBoardInput struct {
 	ID uint `path:"id"`
 }

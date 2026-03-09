@@ -14,6 +14,7 @@ import (
 
 func CreateTaskHandler(ctx context.Context, input *TaskResponse) (*CreateTaskOutput, error) {
 	userID := middleware.GetUserID(ctx)
+	slog.Info("create task user", "userID", userID)
 
 	err := gorm.G[models.Task](postgres.Db).Create(ctx, &models.Task{
 		Name:        input.Body.Name,
@@ -55,6 +56,39 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*GetTaskOutput, e
 				Status:      task.Status,
 				Priority:    task.Priority,
 			},
+		},
+	}, nil
+}
+
+func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*GetAllTasksOutput, error) {
+	userID := middleware.GetUserID(ctx)
+
+	if userID == 0 {
+		return nil, huma.Error401Unauthorized("unauthorized")
+	}
+
+	tasks, err := gorm.G[models.Task](postgres.Db).Where("created_by_id = ?", userID).Find(ctx)
+	if err != nil {
+		slog.Error("failed get all tasks", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError(err.Error())
+	}
+
+	taskDTOs := make([]TaskDTO, len(tasks))
+	for i, task := range tasks {
+		taskDTOs[i] = TaskDTO{
+			Name:        task.Name,
+			Description: task.Description,
+			Status:      task.Status,
+			Priority:    task.Priority,
+		}
+	}
+
+	return &GetAllTasksOutput{
+		Status: http.StatusOK,
+		Body: struct {
+			Tasks []TaskDTO `json:"tasks"`
+		}{
+			Tasks: taskDTOs,
 		},
 	}, nil
 }

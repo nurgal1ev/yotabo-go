@@ -25,6 +25,16 @@ type GetTaskOutput struct {
 	Body   TaskResponse
 }
 
+type GetAllTasksInput struct {
+}
+
+type GetAllTasksOutput struct {
+	Status int
+	Body   struct {
+		Tasks []TaskDTO `json:"tasks"`
+	}
+}
+
 type UpdateTaskInput struct {
 	ID   uint `path:"id"`
 	Body struct {

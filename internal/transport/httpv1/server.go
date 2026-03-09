@@ -61,9 +61,9 @@ func StartServer() {
 
 	huma.Register(router, huma.Operation{
 		Method:  http.MethodGet,
-		Path:    "/tasks/{id}",
+		Path:    "/tasks",
 		Tags:    []string{"Task"},
-		Summary: "Get all task",
+		Summary: "Get all tasks",
 	}, task.GetAllTasksHandler)
 
 	huma.Register(router, huma.Operation{
@@ -103,9 +103,9 @@ func StartServer() {
 
 	huma.Register(router, huma.Operation{
 		Method:  http.MethodGet,
-		Path:    "/boards{id}",
+		Path:    "/boards",
 		Tags:    []string{"Board"},
-		Summary: "Get all board",
+		Summary: "Get all boards",
 	}, board.GetAllBoardsHandler)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {

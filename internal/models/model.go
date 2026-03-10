@@ -34,6 +34,20 @@ type Board struct {
 	gorm.Model
 	Name        string
 	Description string
+
 	CreatedByID uint
 	CreatedBy   User
+
+	FolderID *uint
+	Folder   Folder `gorm:"foreignKey:FolderID"`
+}
+
+type Folder struct {
+	gorm.Model
+	Name string
+
+	CreatedByID uint
+	CreatedBy   User `gorm:"foreignKey:CreatedByID"`
+
+	Boards []Board
 }

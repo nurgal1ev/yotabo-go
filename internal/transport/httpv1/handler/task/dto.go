@@ -21,7 +21,7 @@ type GetTaskInput struct {
 	ID uint `path:"id"` // {id} в URL
 }
 type GetTaskOutput struct {
-	Status int `status:"201"`
+	Status int
 	Body   TaskResponse
 }
 
@@ -46,7 +46,7 @@ type UpdateTaskInput struct {
 }
 
 type UpdateTaskOutput struct {
-	Status int `status:"201"`
+	Status int
 	Body   TaskResponse
 }
 
@@ -55,6 +55,6 @@ type DeleteTaskInput struct {
 }
 
 type DeleteTaskOutput struct {
-	Status  int `status:"201"`
+	Status  int
 	Message string
 }

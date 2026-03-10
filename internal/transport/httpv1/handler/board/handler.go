@@ -33,7 +33,6 @@ func CreateBoardHandler(ctx context.Context, input *BoardResponse) (*CreateBoard
 	}, nil
 }
 
-// TODO: сделать GET-хендлеры для получения
 func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*GetBoardOutput, error) {
 	board, err := gorm.G[models.Board](postgres.Db).Where("id = ?", input.ID).First(ctx)
 	if err != nil {

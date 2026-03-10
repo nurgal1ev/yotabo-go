@@ -7,6 +7,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/nurgal1ev/yotabo-go/internal/config"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/board"
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/folder"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/task"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/user"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
@@ -89,14 +90,14 @@ func StartServer() {
 
 	huma.Register(router, huma.Operation{
 		Method:  http.MethodDelete,
-		Path:    "/boards{id}",
+		Path:    "/boards/{id}",
 		Tags:    []string{"Board"},
 		Summary: "Delete board",
 	}, board.DeleteBoardHandler)
 
 	huma.Register(router, huma.Operation{
 		Method:  http.MethodGet,
-		Path:    "/boards{id}",
+		Path:    "/boards/{id}",
 		Tags:    []string{"Board"},
 		Summary: "Get board",
 	}, board.GetBoardHandler)
@@ -107,6 +108,41 @@ func StartServer() {
 		Tags:    []string{"Board"},
 		Summary: "Get all boards",
 	}, board.GetAllBoardsHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodPost,
+		Path:    "/folders",
+		Tags:    []string{"Folder"},
+		Summary: "Create folder",
+	}, folder.CreateFolderHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodDelete,
+		Path:    "/folders/{id}",
+		Tags:    []string{"Folder"},
+		Summary: "Delete folder",
+	}, folder.DeleteFolderHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodGet,
+		Path:    "/folders/{id}",
+		Tags:    []string{"Folder"},
+		Summary: "Get folder",
+	}, folder.GetFolderHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodGet,
+		Path:    "/folders",
+		Tags:    []string{"Folder"},
+		Summary: "Get all folders",
+	}, folder.GetAllFoldersHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodPut,
+		Path:    "/folders/{id}",
+		Tags:    []string{"Folder"},
+		Summary: "Update folder",
+	}, folder.UpdateFolderHandler)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		panic(err)

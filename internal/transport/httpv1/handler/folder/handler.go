@@ -12,7 +12,7 @@ import (
 	"net/http"
 )
 
-func CreateFolderHandler(ctx context.Context, input *FolderResponse) (*CreateFolderOutput, error) {
+func CreateFolderHandler(ctx context.Context, input *CreateFolderInput) (*CreateFolderOutput, error) {
 	userID := middleware.GetUserID(ctx)
 
 	err := gorm.G[models.Folder](postgres.Db).Create(ctx, &models.Folder{
@@ -64,12 +64,25 @@ func GetFolderHandler(ctx context.Context, input *GetFolderInput) (*GetFolderOut
 		return nil, huma.Error500InternalServerError(err.Error())
 	}
 
+	boards, err := gorm.G[models.Board](postgres.Db).Where("folder_id = ?", folder.ID).Find(ctx)
+	if err != nil {
+		slog.Error("failed get all boards", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError(err.Error())
+	}
+
+	boardDTOs := make([]FolderBoardDTO, len(boards))
+	for i, board := range boards {
+		boardDTOs[i] = FolderBoardDTO{
+			Name: board.Name,
+		}
+	}
+
 	return &GetFolderOutput{
 		Status: http.StatusOK,
-		Body: FolderResponse{
-			Body: FolderDTO{
-				Name: folder.Name,
-			},
+		Body: FolderDTO{
+			ID:     folder.ID,
+			Name:   folder.Name,
+			Boards: boardDTOs,
 		},
 	}, nil
 }
@@ -77,7 +90,7 @@ func GetFolderHandler(ctx context.Context, input *GetFolderInput) (*GetFolderOut
 func GetAllFoldersHandler(ctx context.Context, input *GetAllFoldersInput) (*GetAllFoldersOutput, error) {
 	userID := middleware.GetUserID(ctx)
 
-	folders, err := gorm.G[models.Folder](postgres.Db).Where("created_by_id = ?", userID).Find(ctx)
+	folders, err := gorm.G[models.Folder](postgres.Db).Preload("Boards", nil).Where("created_by_id = ?", userID).Find(ctx)
 	if err != nil {
 		slog.Error("failed get all folders", slog.String("error", err.Error()))
 		return nil, huma.Error500InternalServerError(err.Error())
@@ -85,8 +98,16 @@ func GetAllFoldersHandler(ctx context.Context, input *GetAllFoldersInput) (*GetA
 
 	foldersDTOs := make([]FolderDTO, len(folders))
 	for i, folder := range folders {
+		boardDTOs := make([]FolderBoardDTO, 0, len(folder.Boards))
+		for _, board := range folder.Boards {
+			boardDTOs = append(boardDTOs, FolderBoardDTO{
+				ID:   board.ID,
+				Name: board.Name,
+			})
+		}
 		foldersDTOs[i] = FolderDTO{
-			Name: folder.Name,
+			Name:   folder.Name,
+			Boards: boardDTOs,
 		}
 	}
 

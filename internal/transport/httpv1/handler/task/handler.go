@@ -12,6 +12,7 @@ import (
 	"net/http"
 )
 
+// TODO: прокинуть айди
 func CreateTaskHandler(ctx context.Context, input *TaskResponse) (*CreateTaskOutput, error) {
 	userID := middleware.GetUserID(ctx)
 	slog.Info("create task user", "userID", userID)
@@ -49,13 +50,11 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*GetTaskOutput, e
 
 	return &GetTaskOutput{
 		Status: http.StatusOK,
-		Body: TaskResponse{
-			Body: TaskDTO{
-				Name:        task.Name,
-				Description: task.Description,
-				Status:      task.Status,
-				Priority:    task.Priority,
-			},
+		Body: TaskDTO{
+			Name:        task.Name,
+			Description: task.Description,
+			Status:      task.Status,
+			Priority:    task.Priority,
 		},
 	}, nil
 }
@@ -94,17 +93,12 @@ func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*GetAllTa
 }
 
 func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*UpdateTaskOutput, error) {
-	userID := middleware.GetUserID(ctx)
 	task, err := gorm.G[models.Task](postgres.Db).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, huma.Error404NotFound("task not found")
 		}
 		return nil, err
-	}
-
-	if userID == 0 {
-		return nil, huma.Error401Unauthorized("unauthorized")
 	}
 
 	if input.Body.Name != nil {

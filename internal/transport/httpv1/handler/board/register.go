@@ -33,4 +33,11 @@ func Register(router *huma.Group) {
 		Tags:    []string{"Board"},
 		Summary: "Get all boards",
 	}, GetAllBoardsHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodPatch,
+		Path:    "/boards/{id}",
+		Tags:    []string{"Board"},
+		Summary: "Update board",
+	}, UpdateBoardHandler)
 }

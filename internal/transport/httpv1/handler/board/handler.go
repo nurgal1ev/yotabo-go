@@ -18,6 +18,7 @@ func CreateBoardHandler(ctx context.Context, input *BoardResponse) (*CreateBoard
 	err := gorm.G[models.Board](postgres.Db).Create(ctx, &models.Board{
 		Name:        input.Body.Name,
 		CreatedByID: uint(userID),
+		FolderID:    input.Body.FolderID,
 	})
 
 	if err != nil {
@@ -45,10 +46,9 @@ func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*GetBoardOutput
 
 	return &GetBoardOutput{
 		Status: http.StatusOK,
-		Body: BoardResponse{
-			Body: BoardDTO{
-				Name: board.Name,
-			},
+		Body: BoardDTO{
+			ID:   board.ID,
+			Name: board.Name,
 		},
 	}, nil
 }
@@ -96,5 +96,31 @@ func DeleteBoardHandler(ctx context.Context, input *DeleteBoardInput) (*DeleteBo
 	return &DeleteBoardOutput{
 		Status:  http.StatusOK,
 		Message: "board deleted successfully",
+	}, nil
+}
+
+func UpdateBoardHandler(ctx context.Context, input *UpdateBoardInput) (*UpdateBoardOutput, error) {
+	board, err := gorm.G[models.Board](postgres.Db).Where("id = ?", input.ID).First(ctx)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, huma.Error404NotFound("board not found")
+		}
+		return nil, err
+	}
+
+	if input.Body.Name != nil {
+		board.Name = *input.Body.Name
+	}
+
+	if input.Body.FolderID != nil {
+		board.FolderID = input.Body.FolderID
+	}
+
+	return &UpdateBoardOutput{
+		Status: http.StatusOK,
+		Body: BoardDTO{
+			Name:     board.Name,
+			FolderID: board.FolderID,
+		},
 	}, nil
 }

@@ -5,7 +5,9 @@ type BoardResponse struct {
 }
 
 type BoardDTO struct {
-	Name string `json:"name"`
+	ID       uint   `json:"id"`
+	Name     string `json:"name"`
+	FolderID *uint  `json:"folder_id"`
 }
 
 type CreateBoardOutput struct {
@@ -21,7 +23,7 @@ type GetBoardInput struct {
 
 type GetBoardOutput struct {
 	Status int
-	Body   BoardResponse
+	Body   BoardDTO
 }
 
 type GetAllBoardsInput struct{}
@@ -39,4 +41,17 @@ type DeleteBoardInput struct {
 type DeleteBoardOutput struct {
 	Status  int
 	Message string
+}
+
+type UpdateBoardInput struct {
+	ID   uint `path:"id"`
+	Body struct {
+		Name     *string `json:"name"`
+		FolderID *uint   `json:"folder_id"`
+	}
+}
+
+type UpdateBoardOutput struct {
+	Status int
+	Body   BoardDTO
 }

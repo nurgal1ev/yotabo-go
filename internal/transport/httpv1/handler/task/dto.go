@@ -1,5 +1,6 @@
 package task
 
+// TODO: прокинуть айди
 type TaskResponse struct {
 	Body TaskDTO
 }
@@ -18,11 +19,11 @@ type CreateTaskOutput struct {
 }
 
 type GetTaskInput struct {
-	ID uint `path:"id"` // {id} в URL
+	ID uint `path:"id"`
 }
 type GetTaskOutput struct {
 	Status int
-	Body   TaskResponse
+	Body   TaskDTO
 }
 
 type GetAllTasksInput struct {

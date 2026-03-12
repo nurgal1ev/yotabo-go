@@ -5,9 +5,22 @@ type FolderResponse struct {
 }
 
 type FolderDTO struct {
+	ID     uint             `json:"id"`
+	Name   string           `json:"name"`
+	Boards []FolderBoardDTO `json:"boards"`
+}
+
+type FolderBoardDTO struct {
+	ID   uint   `json:"id"`
 	Name string `json:"name"`
 }
 
+type CreateFolderInput struct {
+	Body struct {
+		ID   uint   `json:"id"`
+		Name string `json:"name"`
+	}
+}
 type CreateFolderOutput struct {
 	Status int
 	Body   struct {
@@ -30,7 +43,7 @@ type GetFolderInput struct {
 
 type GetFolderOutput struct {
 	Status int
-	Body   FolderResponse
+	Body   FolderDTO
 }
 
 type GetAllFoldersInput struct{}

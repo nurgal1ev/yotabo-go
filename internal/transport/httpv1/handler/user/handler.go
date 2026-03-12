@@ -84,3 +84,5 @@ func LoginHandler(ctx context.Context, input *LoginInput) (*LoginOutput, error) 
 
 	return resp, nil
 }
+
+//TODO: получение юзера api/v1/users/me

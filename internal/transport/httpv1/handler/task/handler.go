@@ -51,6 +51,7 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*GetTaskOutput, e
 	return &GetTaskOutput{
 		Status: http.StatusOK,
 		Body: TaskDTO{
+			ID:          task.ID,
 			Name:        task.Name,
 			Description: task.Description,
 			Status:      task.Status,
@@ -75,6 +76,7 @@ func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*GetAllTa
 	taskDTOs := make([]TaskDTO, len(tasks))
 	for i, task := range tasks {
 		taskDTOs[i] = TaskDTO{
+			ID:          task.ID,
 			Name:        task.Name,
 			Description: task.Description,
 			Status:      task.Status,

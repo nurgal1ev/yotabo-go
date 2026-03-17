@@ -28,6 +28,9 @@ type Task struct {
 
 	UpdatedByID uint
 	UpdatedBy   *User `gorm:"foreignKey:UpdatedByID"`
+
+	SubtaskID *uint
+	Subtasks  []Subtask
 }
 
 type Board struct {
@@ -50,4 +53,13 @@ type Folder struct {
 	CreatedBy   User `gorm:"foreignKey:CreatedByID"`
 
 	Boards []Board
+}
+
+type Subtask struct {
+	gorm.Model
+	Name      string
+	Completed bool
+
+	TaskID uint
+	Task   Task `gorm:"foreignKey:TaskID"`
 }

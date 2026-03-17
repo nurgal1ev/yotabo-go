@@ -1,6 +1,8 @@
 package httpv1
 
 import (
+	"net/http"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	"github.com/go-chi/chi/v5"
@@ -8,10 +10,10 @@ import (
 	"github.com/nurgal1ev/yotabo-go/internal/config"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/board"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/folder"
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/subtask"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/task"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/user"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
-	"net/http"
 )
 
 func StartServer() {
@@ -49,6 +51,7 @@ func StartServer() {
 	task.Register(router)
 	board.Register(router)
 	folder.Register(router)
+	subtask.Register(router)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		panic(err)

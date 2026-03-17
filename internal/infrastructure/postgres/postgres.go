@@ -1,10 +1,11 @@
 package postgres
 
 import (
+	"log"
+
 	"github.com/nurgal1ev/yotabo-go/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
 )
 
 var Db *gorm.DB
@@ -16,7 +17,7 @@ func NewDatabaseConnection(cfg Config) {
 		panic(err)
 	}
 
-	err = Db.AutoMigrate(&models.User{}, &models.Task{}, &models.Board{}, &models.Folder{})
+	err = Db.AutoMigrate(&models.User{}, &models.Task{}, &models.Board{}, &models.Folder{}, &models.Subtask{})
 	if err != nil {
 		log.Printf("Error during migration: %v", err)
 		return

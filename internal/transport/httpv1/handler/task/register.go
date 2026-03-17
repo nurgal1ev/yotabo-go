@@ -1,8 +1,9 @@
 package task
 
 import (
-	"github.com/danielgtaylor/huma/v2"
 	"net/http"
+
+	"github.com/danielgtaylor/huma/v2"
 )
 
 func Register(router *huma.Group) {
@@ -28,7 +29,7 @@ func Register(router *huma.Group) {
 	}, GetAllTasksHandler)
 
 	huma.Register(router, huma.Operation{
-		Method:  http.MethodPut,
+		Method:  http.MethodPatch,
 		Path:    "/tasks/{id}",
 		Tags:    []string{"Task"},
 		Summary: "Update task",

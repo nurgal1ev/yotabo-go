@@ -1,8 +1,9 @@
 package folder
 
 import (
-	"github.com/danielgtaylor/huma/v2"
 	"net/http"
+
+	"github.com/danielgtaylor/huma/v2"
 )
 
 func Register(router *huma.Group) {
@@ -35,7 +36,7 @@ func Register(router *huma.Group) {
 	}, GetAllFoldersHandler)
 
 	huma.Register(router, huma.Operation{
-		Method:  http.MethodPut,
+		Method:  http.MethodPatch,
 		Path:    "/folders/{id}",
 		Tags:    []string{"Folder"},
 		Summary: "Update folder",

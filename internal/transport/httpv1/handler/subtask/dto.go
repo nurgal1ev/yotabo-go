@@ -29,8 +29,7 @@ type DeleteSubtaskOutput struct {
 type UpdateSubtaskInput struct {
 	ID   uint `path:"id"`
 	Body struct {
-		Name      *string `json:"name,omitempty" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
-		Completed *bool   `json:"completed,omitempty"`
+		Completed *bool `json:"completed,omitempty"`
 	}
 }
 

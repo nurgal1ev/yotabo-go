@@ -41,13 +41,7 @@ func UpdateSubtaskHandler(ctx context.Context, input *UpdateSubtaskInput) (*Upda
 		return nil, err
 	}
 
-	if input.Body.Name != nil {
-		subtask.Name = *input.Body.Name
-	}
-
-	if input.Body.Completed != nil {
-		subtask.Completed = *input.Body.Completed
-	}
+	subtask.Completed = *input.Body.Completed
 
 	_, err = gorm.G[models.Subtask](postgres.Db).
 		Where("id = ?", input.ID).
@@ -63,6 +57,7 @@ func UpdateSubtaskHandler(ctx context.Context, input *UpdateSubtaskInput) (*Upda
 			Body: SubtaskDTO{
 				Name:      subtask.Name,
 				Completed: subtask.Completed,
+				TaskID:    subtask.TaskID,
 			},
 		},
 	}, nil

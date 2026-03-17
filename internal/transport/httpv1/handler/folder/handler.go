@@ -3,13 +3,14 @@ package folder
 import (
 	"context"
 	"errors"
+	"log/slog"
+	"net/http"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
 	"github.com/nurgal1ev/yotabo-go/internal/models"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
 	"gorm.io/gorm"
-	"log/slog"
-	"net/http"
 )
 
 func CreateFolderHandler(ctx context.Context, input *CreateFolderInput) (*CreateFolderOutput, error) {
@@ -106,6 +107,7 @@ func GetAllFoldersHandler(ctx context.Context, input *GetAllFoldersInput) (*GetA
 			})
 		}
 		foldersDTOs[i] = FolderDTO{
+			ID:     folder.ID,
 			Name:   folder.Name,
 			Boards: boardDTOs,
 		}

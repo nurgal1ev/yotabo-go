@@ -5,12 +5,12 @@ type TaskResponse struct {
 }
 
 type TaskDTO struct {
-	ID          uint   `json:"id"`
-	Name        string `json:"name" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
-	Description string `json:"description" maxLength:"10000" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
-	Status      string `json:"status" enum:"backlog,in_progress,review,done"`
-	Priority    string `json:"priority" enum:"easy,medium,hard"`
-	Subtasks    []SubtasksDTO
+	ID          uint          `json:"id"`
+	Name        string        `json:"name" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
+	Description string        `json:"description" maxLength:"10000" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
+	Status      string        `json:"status" enum:"backlog,in_progress,review,done"`
+	Priority    string        `json:"priority" enum:"easy,medium,hard"`
+	Subtasks    []SubtasksDTO `json:"subtasks"`
 }
 
 type SubtasksDTO struct {

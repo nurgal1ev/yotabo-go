@@ -10,6 +10,12 @@ type BoardDTO struct {
 	FolderID *uint  `json:"folder_id"`
 }
 
+type CreateBoardInput struct {
+	Body struct {
+		Name     string `json:"name" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
+		FolderID *uint  `json:"folder_id"`
+	}
+}
 type CreateBoardOutput struct {
 	Status int
 	Body   struct {

@@ -17,7 +17,6 @@ type FolderBoardDTO struct {
 
 type CreateFolderInput struct {
 	Body struct {
-		ID   uint   `json:"id"`
 		Name string `json:"name"`
 	}
 }

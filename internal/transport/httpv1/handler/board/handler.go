@@ -3,16 +3,17 @@ package board
 import (
 	"context"
 	"errors"
+	"log/slog"
+	"net/http"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
 	"github.com/nurgal1ev/yotabo-go/internal/models"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
 	"gorm.io/gorm"
-	"log/slog"
-	"net/http"
 )
 
-func CreateBoardHandler(ctx context.Context, input *BoardResponse) (*CreateBoardOutput, error) {
+func CreateBoardHandler(ctx context.Context, input *CreateBoardInput) (*CreateBoardOutput, error) {
 	userID := middleware.GetUserID(ctx)
 
 	err := gorm.G[models.Board](postgres.Db).Create(ctx, &models.Board{
@@ -47,7 +48,7 @@ func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*GetBoardOutput
 	return &GetBoardOutput{
 		Status: http.StatusOK,
 		Body: BoardDTO{
-			ID:   board.ID,
+			ID:   input.ID,
 			Name: board.Name,
 		},
 	}, nil
@@ -65,7 +66,9 @@ func GetAllBoardsHandler(ctx context.Context, input *GetAllBoardsInput) (*GetAll
 	boardDTOs := make([]BoardDTO, len(boards))
 	for i, board := range boards {
 		boardDTOs[i] = BoardDTO{
-			Name: board.Name,
+			ID:       board.ID,
+			Name:     board.Name,
+			FolderID: board.FolderID,
 		}
 	}
 
@@ -116,9 +119,14 @@ func UpdateBoardHandler(ctx context.Context, input *UpdateBoardInput) (*UpdateBo
 		board.FolderID = input.Body.FolderID
 	}
 
+	_, err = gorm.G[models.Board](postgres.Db).
+		Where("id = ?", input.ID).
+		Updates(ctx, board)
+
 	return &UpdateBoardOutput{
 		Status: http.StatusOK,
 		Body: BoardDTO{
+			ID:       board.ID,
 			Name:     board.Name,
 			FolderID: board.FolderID,
 		},

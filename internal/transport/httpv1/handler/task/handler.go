@@ -3,6 +3,7 @@ package task
 import (
 	"context"
 	"errors"
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
 	"log/slog"
 	"net/http"
 
@@ -39,7 +40,7 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*CreateTask
 		}{Message: "success"}}, nil
 }
 
-func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*GetTaskOutput, error) {
+func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIResponse[TaskDTO], error) {
 	task, err := gorm.G[models.Task](postgres.Db).Preload("Subtasks", nil).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -64,17 +65,14 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*GetTaskOutput, e
 		}
 	}
 
-	return &GetTaskOutput{
-		Status: http.StatusOK,
-		Body: TaskDTO{
-			ID:          task.ID,
-			Name:        task.Name,
-			Description: task.Description,
-			Status:      task.Status,
-			Priority:    task.Priority,
-			Subtasks:    subtasksDTOs,
-		},
-	}, nil
+	return common.NewHumaResponse(TaskDTO{
+		ID:          task.ID,
+		Name:        task.Name,
+		Description: task.Description,
+		Status:      task.Status,
+		Priority:    task.Priority,
+		Subtasks:    subtasksDTOs,
+	}), nil
 }
 
 func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*GetAllTasksOutput, error) {

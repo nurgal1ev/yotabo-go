@@ -17,7 +17,7 @@ func NewDatabaseConnection(cfg Config) {
 		panic(err)
 	}
 
-	err = Db.AutoMigrate(&models.User{}, &models.Task{}, &models.Board{}, &models.Folder{}, &models.Subtask{})
+	err = Db.AutoMigrate(&models.User{}, &models.Task{}, &models.Board{}, &models.Folder{}, &models.Subtask{}, &models.Comment{})
 	if err != nil {
 		log.Printf("Error during migration: %v", err)
 		return

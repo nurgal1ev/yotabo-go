@@ -9,6 +9,7 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/nurgal1ev/yotabo-go/internal/config"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/board"
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/comment"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/folder"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/subtask"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/task"
@@ -52,6 +53,7 @@ func StartServer() {
 	board.Register(router)
 	folder.Register(router)
 	subtask.Register(router)
+	comment.Register(router)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		panic(err)

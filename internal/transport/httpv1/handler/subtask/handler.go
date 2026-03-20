@@ -12,11 +12,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func CreateSubtaskHandler(ctx context.Context, input *SubtaskResponse) (*CreateSubtaskOutput, error) {
+func CreateSubtaskHandler(ctx context.Context, input *CreateSubtaskInput) (*CreateSubtaskOutput, error) {
 	err := gorm.G[models.Subtask](postgres.Db).Create(ctx, &models.Subtask{
 		Name:      input.Body.Name,
 		Completed: false,
-		TaskID:    input.Body.TaskID,
+		TaskID:    input.TaskID,
 	})
 
 	if err != nil {

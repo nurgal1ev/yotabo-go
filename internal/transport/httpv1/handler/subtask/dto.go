@@ -10,6 +10,13 @@ type SubtaskDTO struct {
 	Completed bool   `json:"completed"`
 }
 
+type CreateSubtaskInput struct {
+	TaskID uint `path:"task_id"`
+	Body   struct {
+		Name      string `json:"name" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
+		Completed bool   `json:"completed"`
+	}
+}
 type CreateSubtaskOutput struct {
 	Status int
 	Body   struct {

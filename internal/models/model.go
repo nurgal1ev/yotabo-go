@@ -6,11 +6,11 @@ import (
 
 type User struct {
 	gorm.Model
-	FirstName string //TODO: макс длина 50, а-Я, a-Z, только буквы
-	LastName  string //TODO: макс длина 50, а-Я, a-Z, только буквы
-	Username  string `gorm:"unique"` //TODO: символы a-z 0-9 _. длина мин 3 - 12 макс., не должен начинаться с числа или спец знаков
-	Email     string `gorm:"unique"` //TODO: валидация
-	Password  string //TODO: длина: мин 7, макс 12, разрешены все символы
+	FirstName string
+	LastName  string
+	Username  string `gorm:"unique"`
+	Email     string `gorm:"unique"`
+	Password  string
 	Avatar    *string
 
 	Tasks []Task `gorm:"foreignKey:CreatedByID"`
@@ -18,10 +18,10 @@ type User struct {
 
 type Task struct {
 	gorm.Model
-	Name        string //TODO: длина макс 55 символов, а-Я, a-Z, 1-10, спец символы
-	Description string //TODO: длина макс 10000 символов, а-Я, a-Z, 1-10, спец символы
-	Status      string //TODO: валидация статуса backlog | in_progress | review | done
-	Priority    string //TODO: валидация статуса easy | medium | hard
+	Name        string
+	Description string
+	Status      string
+	Priority    string
 
 	CreatedByID uint
 	CreatedBy   User `gorm:"foreignKey:CreatedByID"`
@@ -31,6 +31,9 @@ type Task struct {
 
 	SubtaskID *uint
 	Subtasks  []Subtask
+
+	CommentID *uint
+	Comments  []Comment
 }
 
 type Board struct {
@@ -62,4 +65,16 @@ type Subtask struct {
 
 	TaskID uint
 	Task   Task `gorm:"foreignKey:TaskID"`
+}
+
+type Comment struct {
+	gorm.Model
+
+	TaskID uint
+	Task   Task `gorm:"foreignKey:TaskID"`
+
+	AuthorID uint
+	Author   User `gorm:"foreignKey:AuthorID"`
+
+	Message string
 }

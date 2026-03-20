@@ -3,9 +3,10 @@ package task
 import (
 	"context"
 	"errors"
-	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
 	"log/slog"
 	"net/http"
+
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
@@ -14,8 +15,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// TODO: прокинуть айди
-func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*CreateTaskOutput, error) {
+func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*common.HumaAPIResponse[TaskDTO], error) {
 	userID := middleware.GetUserID(ctx)
 	slog.Info("create task user", "userID", userID)
 
@@ -33,11 +33,12 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*CreateTask
 		return nil, err
 	}
 
-	return &CreateTaskOutput{
-		Status: http.StatusCreated,
-		Body: struct {
-			Message string `json:"message"`
-		}{Message: "success"}}, nil
+	return common.NewHumaResponse(TaskDTO{
+		Name:        input.Body.Name,
+		Description: input.Body.Description,
+		Status:      input.Body.Status,
+		Priority:    input.Body.Priority,
+	}), nil
 }
 
 func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIResponse[TaskDTO], error) {

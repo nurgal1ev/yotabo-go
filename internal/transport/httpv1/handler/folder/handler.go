@@ -4,16 +4,16 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
 	"github.com/nurgal1ev/yotabo-go/internal/models"
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
 	"gorm.io/gorm"
 )
 
-func CreateFolderHandler(ctx context.Context, input *CreateFolderInput) (*CreateFolderOutput, error) {
+func CreateFolderHandler(ctx context.Context, input *CreateFolderInput) (*common.HumaAPIResponse[FolderDTO], error) {
 	userID := middleware.GetUserID(ctx)
 
 	err := gorm.G[models.Folder](postgres.Db).Create(ctx, &models.Folder{
@@ -26,15 +26,12 @@ func CreateFolderHandler(ctx context.Context, input *CreateFolderInput) (*Create
 		return nil, err
 	}
 
-	return &CreateFolderOutput{
-		Status: http.StatusCreated,
-		Body: struct {
-			Message string `json:"message"`
-		}{Message: "success"},
-	}, nil
+	return common.NewHumaResponse(FolderDTO{
+		Name: input.Body.Name,
+	}), nil
 }
 
-func DeleteFolderHandler(ctx context.Context, input *DeleteFolderInput) (*DeleteFolderOutput, error) {
+func DeleteFolderHandler(ctx context.Context, input *DeleteFolderInput) (*common.HumaAPIResponse[any], error) {
 	userID := middleware.GetUserID(ctx)
 
 	if userID == 0 {
@@ -49,13 +46,10 @@ func DeleteFolderHandler(ctx context.Context, input *DeleteFolderInput) (*Delete
 		return nil, result.Error
 	}
 
-	return &DeleteFolderOutput{
-		Status:  http.StatusOK,
-		Message: "folder deleted successfully",
-	}, nil
+	return common.NewHumaResponse[any](nil, "folder deleted successfully"), nil
 }
 
-func GetFolderHandler(ctx context.Context, input *GetFolderInput) (*GetFolderOutput, error) {
+func GetFolderHandler(ctx context.Context, input *GetFolderInput) (*common.HumaAPIResponse[FolderDTO], error) {
 	folder, err := gorm.G[models.Folder](postgres.Db).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -78,17 +72,14 @@ func GetFolderHandler(ctx context.Context, input *GetFolderInput) (*GetFolderOut
 		}
 	}
 
-	return &GetFolderOutput{
-		Status: http.StatusOK,
-		Body: FolderDTO{
-			ID:     folder.ID,
-			Name:   folder.Name,
-			Boards: boardDTOs,
-		},
-	}, nil
+	return common.NewHumaResponse(FolderDTO{
+		ID:     folder.ID,
+		Name:   folder.Name,
+		Boards: boardDTOs,
+	}), nil
 }
 
-func GetAllFoldersHandler(ctx context.Context, input *GetAllFoldersInput) (*GetAllFoldersOutput, error) {
+func GetAllFoldersHandler(ctx context.Context, input *GetAllFoldersInput) (*common.HumaAPIResponse[[]FolderDTO], error) {
 	userID := middleware.GetUserID(ctx)
 
 	folders, err := gorm.G[models.Folder](postgres.Db).Preload("Boards", nil).Where("created_by_id = ?", userID).Find(ctx)
@@ -113,17 +104,10 @@ func GetAllFoldersHandler(ctx context.Context, input *GetAllFoldersInput) (*GetA
 		}
 	}
 
-	return &GetAllFoldersOutput{
-		Status: http.StatusOK,
-		Body: struct {
-			Folders []FolderDTO `json:"folders"`
-		}{
-			Folders: foldersDTOs,
-		},
-	}, nil
+	return common.NewHumaResponse(foldersDTOs), nil
 }
 
-func UpdateFolderHandler(ctx context.Context, input *UpdateFolderInput) (*UpdateFolderOutput, error) {
+func UpdateFolderHandler(ctx context.Context, input *UpdateFolderInput) (*common.HumaAPIResponse[FolderDTO], error) {
 	userID := middleware.GetUserID(ctx)
 	folder, err := gorm.G[models.Folder](postgres.Db).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
@@ -149,12 +133,7 @@ func UpdateFolderHandler(ctx context.Context, input *UpdateFolderInput) (*Update
 		return nil, huma.Error500InternalServerError(err.Error())
 	}
 
-	return &UpdateFolderOutput{
-		Status: http.StatusOK,
-		Body: FolderResponse{
-			Body: FolderDTO{
-				Name: folder.Name,
-			},
-		},
-	}, nil
+	return common.NewHumaResponse(FolderDTO{
+		Name: folder.Name,
+	}), nil
 }

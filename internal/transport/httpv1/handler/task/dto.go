@@ -1,9 +1,5 @@
 package task
 
-type TaskResponse struct {
-	Body TaskDTO
-}
-
 type TaskDTO struct {
 	ID          uint          `json:"id"`
 	Name        string        `json:"name" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
@@ -12,7 +8,6 @@ type TaskDTO struct {
 	Priority    string        `json:"priority" enum:"easy,medium,hard"`
 	Subtasks    []SubtasksDTO `json:"subtasks"`
 }
-
 type SubtasksDTO struct {
 	ID        uint   `json:"id"`
 	Name      string `json:"name"`
@@ -26,31 +21,12 @@ type CreateTaskInput struct {
 		Priority    string `json:"priority" enum:"easy,medium,hard"`
 	}
 }
-type CreateTaskOutput struct {
-	Status int
-	Body   struct {
-		Message string `json:"message"`
-	}
-}
-
 type GetTaskInput struct {
 	ID uint `path:"id"`
-}
-type GetTaskOutput struct {
-	Status int
-	Body   TaskDTO
 }
 
 type GetAllTasksInput struct {
 }
-
-type GetAllTasksOutput struct {
-	Status int
-	Body   struct {
-		Tasks []TaskDTO `json:"tasks"`
-	}
-}
-
 type UpdateTaskInput struct {
 	ID   uint `path:"id"`
 	Body struct {
@@ -60,17 +36,6 @@ type UpdateTaskInput struct {
 		Priority    *string `json:"priority,omitempty" enum:"easy,medium,hard"`
 	}
 }
-
-type UpdateTaskOutput struct {
-	Status int
-	Body   TaskResponse
-}
-
 type DeleteTaskInput struct {
 	ID uint `path:"id"`
-}
-
-type DeleteTaskOutput struct {
-	Status  int
-	Message string
 }

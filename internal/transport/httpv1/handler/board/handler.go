@@ -4,16 +4,16 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
 	"github.com/nurgal1ev/yotabo-go/internal/models"
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
 	"gorm.io/gorm"
 )
 
-func CreateBoardHandler(ctx context.Context, input *CreateBoardInput) (*CreateBoardOutput, error) {
+func CreateBoardHandler(ctx context.Context, input *CreateBoardInput) (*common.HumaAPIResponse[BoardDTO], error) {
 	userID := middleware.GetUserID(ctx)
 
 	err := gorm.G[models.Board](postgres.Db).Create(ctx, &models.Board{
@@ -27,15 +27,13 @@ func CreateBoardHandler(ctx context.Context, input *CreateBoardInput) (*CreateBo
 		return nil, err
 	}
 
-	return &CreateBoardOutput{
-		Status: http.StatusCreated,
-		Body: struct {
-			Message string `json:"message"`
-		}{Message: "success"},
-	}, nil
+	return common.NewHumaResponse(BoardDTO{
+		Name:     input.Body.Name,
+		FolderID: input.Body.FolderID,
+	}), nil
 }
 
-func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*GetBoardOutput, error) {
+func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*common.HumaAPIResponse[BoardDTO], error) {
 	board, err := gorm.G[models.Board](postgres.Db).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -45,16 +43,13 @@ func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*GetBoardOutput
 		return nil, huma.Error500InternalServerError(err.Error())
 	}
 
-	return &GetBoardOutput{
-		Status: http.StatusOK,
-		Body: BoardDTO{
-			ID:   input.ID,
-			Name: board.Name,
-		},
-	}, nil
+	return common.NewHumaResponse(BoardDTO{
+		ID:   input.ID,
+		Name: board.Name,
+	}), nil
 }
 
-func GetAllBoardsHandler(ctx context.Context, input *GetAllBoardsInput) (*GetAllBoardsOutput, error) {
+func GetAllBoardsHandler(ctx context.Context, input *GetAllBoardsInput) (*common.HumaAPIResponse[[]BoardDTO], error) {
 	userID := middleware.GetUserID(ctx)
 
 	boards, err := gorm.G[models.Board](postgres.Db).Where("created_by_id = ?", userID).Find(ctx)
@@ -72,17 +67,10 @@ func GetAllBoardsHandler(ctx context.Context, input *GetAllBoardsInput) (*GetAll
 		}
 	}
 
-	return &GetAllBoardsOutput{
-		Status: http.StatusOK,
-		Body: struct {
-			Boards []BoardDTO `json:"boards"`
-		}{
-			Boards: boardDTOs,
-		},
-	}, nil
+	return common.NewHumaResponse(boardDTOs), nil
 }
 
-func DeleteBoardHandler(ctx context.Context, input *DeleteBoardInput) (*DeleteBoardOutput, error) {
+func DeleteBoardHandler(ctx context.Context, input *DeleteBoardInput) (*common.HumaAPIResponse[any], error) {
 	userID := middleware.GetUserID(ctx)
 	if userID == 0 {
 		return nil, huma.Error401Unauthorized("unauthorized")
@@ -96,13 +84,10 @@ func DeleteBoardHandler(ctx context.Context, input *DeleteBoardInput) (*DeleteBo
 		return nil, result.Error
 	}
 
-	return &DeleteBoardOutput{
-		Status:  http.StatusOK,
-		Message: "board deleted successfully",
-	}, nil
+	return common.NewHumaResponse[any](nil, "board deleted successfully"), nil
 }
 
-func UpdateBoardHandler(ctx context.Context, input *UpdateBoardInput) (*UpdateBoardOutput, error) {
+func UpdateBoardHandler(ctx context.Context, input *UpdateBoardInput) (*common.HumaAPIResponse[BoardDTO], error) {
 	board, err := gorm.G[models.Board](postgres.Db).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -123,12 +108,9 @@ func UpdateBoardHandler(ctx context.Context, input *UpdateBoardInput) (*UpdateBo
 		Where("id = ?", input.ID).
 		Updates(ctx, board)
 
-	return &UpdateBoardOutput{
-		Status: http.StatusOK,
-		Body: BoardDTO{
-			ID:       board.ID,
-			Name:     board.Name,
-			FolderID: board.FolderID,
-		},
-	}, nil
+	return common.NewHumaResponse(BoardDTO{
+		ID:       board.ID,
+		Name:     board.Name,
+		FolderID: board.FolderID,
+	}), nil
 }

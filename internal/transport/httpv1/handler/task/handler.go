@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"log/slog"
-	"net/http"
 
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
 
@@ -76,7 +75,7 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIRe
 	}), nil
 }
 
-func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*GetAllTasksOutput, error) {
+func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*common.HumaAPIResponse[[]TaskDTO], error) {
 	userID := middleware.GetUserID(ctx)
 
 	if userID == 0 {
@@ -109,17 +108,10 @@ func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*GetAllTa
 		}
 	}
 
-	return &GetAllTasksOutput{
-		Status: http.StatusOK,
-		Body: struct {
-			Tasks []TaskDTO `json:"tasks"`
-		}{
-			Tasks: taskDTOs,
-		},
-	}, nil
+	return common.NewHumaResponse(taskDTOs), nil
 }
 
-func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*UpdateTaskOutput, error) {
+func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*common.HumaAPIResponse[TaskDTO], error) {
 	task, err := gorm.G[models.Task](postgres.Db).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -149,20 +141,15 @@ func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*UpdateTask
 		return nil, huma.Error500InternalServerError(err.Error())
 	}
 
-	return &UpdateTaskOutput{
-		Status: http.StatusOK,
-		Body: TaskResponse{
-			Body: TaskDTO{
-				Name:        task.Name,
-				Description: task.Description,
-				Status:      task.Status,
-				Priority:    task.Priority,
-			},
-		},
-	}, nil
+	return common.NewHumaResponse(TaskDTO{
+		Name:        task.Name,
+		Description: task.Description,
+		Status:      task.Status,
+		Priority:    task.Priority,
+	}), nil
 }
 
-func DeleteTaskHandler(ctx context.Context, input *DeleteTaskInput) (*DeleteTaskOutput, error) {
+func DeleteTaskHandler(ctx context.Context, input *DeleteTaskInput) (*common.HumaAPIResponse[any], error) {
 	userID := middleware.GetUserID(ctx)
 
 	taskID := input.ID
@@ -173,8 +160,5 @@ func DeleteTaskHandler(ctx context.Context, input *DeleteTaskInput) (*DeleteTask
 		return nil, result.Error
 	}
 
-	return &DeleteTaskOutput{
-		Status:  http.StatusOK,
-		Message: "task deleted successfully",
-	}, nil
+	return common.NewHumaResponse[any](nil, "task deleted successfully"), nil
 }

@@ -65,6 +65,20 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIRe
 		}
 	}
 
+	comments, err := gorm.G[models.Comment](postgres.Db).Where("task_id = ?", task.ID).Find(ctx)
+	if err != nil {
+		slog.Error("failed get comments", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError(err.Error())
+	}
+
+	commentsDTOs := make([]CommentsDTO, len(comments))
+	for i, comment := range comments {
+		commentsDTOs[i] = CommentsDTO{
+			ID:      comment.ID,
+			Message: comment.Message,
+		}
+	}
+
 	return common.NewHumaResponse(TaskDTO{
 		ID:          task.ID,
 		Name:        task.Name,
@@ -72,6 +86,7 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIRe
 		Status:      task.Status,
 		Priority:    task.Priority,
 		Subtasks:    subtasksDTOs,
+		Comments:    commentsDTOs,
 	}), nil
 }
 

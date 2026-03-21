@@ -9,6 +9,7 @@ import (
 	"github.com/nurgal1ev/yotabo-go/internal/infrastructure/postgres"
 	"github.com/nurgal1ev/yotabo-go/internal/models"
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
+	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/middleware"
 	"gorm.io/gorm"
 )
 
@@ -40,7 +41,14 @@ func UpdateSubtaskHandler(ctx context.Context, input *UpdateSubtaskInput) (*comm
 		return nil, err
 	}
 
-	subtask.Completed = *input.Body.Completed
+	if input.Body.Name != nil {
+		subtask.Name = *input.Body.Name
+	}
+
+	if input.Body.Completed != nil {
+		subtask.Completed = *input.Body.Completed
+
+	}
 
 	_, err = gorm.G[models.Subtask](postgres.Db).
 		Where("id = ?", input.ID).
@@ -55,4 +63,21 @@ func UpdateSubtaskHandler(ctx context.Context, input *UpdateSubtaskInput) (*comm
 		Completed: subtask.Completed,
 		TaskID:    subtask.TaskID,
 	}), nil
+}
+
+func DeleteSubtaskHandler(ctx context.Context, input *DeleteSubtaskInput) (*common.HumaAPIResponse[any], error) {
+	userID := middleware.GetUserID(ctx)
+
+	result := postgres.Db.Delete(&models.Subtask{}, "id = ? AND task_id IN (SELECT id FROM tasks WHERE created_by_id = ?)", input.ID, userID)
+
+	if result.Error != nil {
+		slog.Error("failed delete subtask", slog.String("error", result.Error.Error()))
+		return nil, huma.Error500InternalServerError("failed to delete subtask")
+	}
+
+	if result.RowsAffected == 0 {
+		return nil, huma.Error404NotFound("subtask not found")
+	}
+
+	return common.NewHumaResponse[any](nil, "subtask deleted successfully"), nil
 }

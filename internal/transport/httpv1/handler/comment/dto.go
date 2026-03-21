@@ -12,7 +12,14 @@ type CreateCommentInput struct {
 		Message string `json:"message"`
 	}
 }
-type CreateCommentOutput struct {
-	Status int
-	Body   CommentDTO
+
+type UpdateCommentInput struct {
+	ID   uint `path:"id"`
+	Body struct {
+		Message *string `json:"message"`
+	}
+}
+
+type DeleteCommentInput struct {
+	ID uint `path:"id"`
 }

@@ -20,4 +20,11 @@ func Register(router *huma.Group) {
 		Tags:    []string{"Subtask"},
 		Summary: "Update subtask",
 	}, UpdateSubtaskHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodDelete,
+		Path:    "/subtasks/{id}",
+		Tags:    []string{"Subtask"},
+		Summary: "Delete subtask",
+	}, DeleteSubtaskHandler)
 }

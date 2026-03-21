@@ -14,4 +14,17 @@ func Register(router *huma.Group) {
 		Summary: "Create comment",
 	}, CreateCommentHandler)
 
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodPatch,
+		Path:    "/comments/{id}",
+		Tags:    []string{"Comments"},
+		Summary: "Update comment",
+	}, UpdateCommentHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodDelete,
+		Path:    "/comments/{id}",
+		Tags:    []string{"Comments"},
+		Summary: "Delete comment",
+	}, DeleteCommentHandler)
 }

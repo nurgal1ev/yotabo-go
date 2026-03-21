@@ -7,11 +7,17 @@ type TaskDTO struct {
 	Status      string        `json:"status" enum:"backlog,in_progress,review,done"`
 	Priority    string        `json:"priority" enum:"easy,medium,hard"`
 	Subtasks    []SubtasksDTO `json:"subtasks"`
+	Comments    []CommentsDTO `json:"comments"`
 }
 type SubtasksDTO struct {
 	ID        uint   `json:"id"`
 	Name      string `json:"name"`
 	Completed bool   `json:"completed"`
+}
+
+type CommentsDTO struct {
+	ID      uint   `json:"id"`
+	Message string `json:"message"`
 }
 type CreateTaskInput struct {
 	Body struct {

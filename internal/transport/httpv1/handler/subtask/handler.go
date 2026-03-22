@@ -14,11 +14,13 @@ import (
 )
 
 func CreateSubtaskHandler(ctx context.Context, input *CreateSubtaskInput) (*common.HumaAPIResponse[SubtaskDTO], error) {
-	err := gorm.G[models.Subtask](postgres.Db).Create(ctx, &models.Subtask{
+	subtask := &models.Subtask{
 		Name:      input.Body.Name,
 		Completed: false,
 		TaskID:    input.TaskID,
-	})
+	}
+
+	err := gorm.G[models.Subtask](postgres.Db).Create(ctx, subtask)
 
 	if err != nil {
 		slog.Error("failed create subtask", slog.String("error", err.Error()))
@@ -26,9 +28,10 @@ func CreateSubtaskHandler(ctx context.Context, input *CreateSubtaskInput) (*comm
 	}
 
 	return common.NewHumaResponse(SubtaskDTO{
-		Name:      input.Body.Name,
-		Completed: input.Body.Completed,
-		TaskID:    input.TaskID,
+		ID:        subtask.ID,
+		Name:      subtask.Name,
+		Completed: subtask.Completed,
+		TaskID:    subtask.TaskID,
 	}), nil
 }
 

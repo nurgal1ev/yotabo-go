@@ -16,20 +16,22 @@ import (
 func CreateBoardHandler(ctx context.Context, input *CreateBoardInput) (*common.HumaAPIResponse[BoardDTO], error) {
 	userID := middleware.GetUserID(ctx)
 
-	err := gorm.G[models.Board](postgres.Db).Create(ctx, &models.Board{
+	board := &models.Board{
 		Name:        input.Body.Name,
 		CreatedByID: uint(userID),
 		FolderID:    input.Body.FolderID,
-	})
+	}
 
+	err := gorm.G[models.Board](postgres.Db).Create(ctx, board)
 	if err != nil {
 		slog.Error("failed create board", slog.String("error", err.Error()))
 		return nil, err
 	}
 
 	return common.NewHumaResponse(BoardDTO{
-		Name:     input.Body.Name,
-		FolderID: input.Body.FolderID,
+		ID:       board.ID,
+		Name:     board.Name,
+		FolderID: board.FolderID,
 	}), nil
 }
 

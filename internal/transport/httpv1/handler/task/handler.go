@@ -18,14 +18,16 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*common.Hum
 	userID := middleware.GetUserID(ctx)
 	slog.Info("create task user", "userID", userID)
 
-	err := gorm.G[models.Task](postgres.Db).Create(ctx, &models.Task{
+	task := &models.Task{
 		Name:        input.Body.Name,
 		Description: input.Body.Description,
 		Status:      input.Body.Status,
 		Priority:    input.Body.Priority,
 		CreatedByID: uint(userID),
 		UpdatedByID: uint(userID),
-	})
+	}
+
+	err := gorm.G[models.Task](postgres.Db).Create(ctx, task)
 
 	if err != nil {
 		slog.Error("failed create task", slog.String("error", err.Error()))
@@ -33,10 +35,11 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*common.Hum
 	}
 
 	return common.NewHumaResponse(TaskDTO{
-		Name:        input.Body.Name,
-		Description: input.Body.Description,
-		Status:      input.Body.Status,
-		Priority:    input.Body.Priority,
+		ID:          task.ID,
+		Name:        task.Name,
+		Description: task.Description,
+		Status:      task.Status,
+		Priority:    task.Priority,
 	}), nil
 }
 

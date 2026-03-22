@@ -16,10 +16,11 @@ import (
 func CreateFolderHandler(ctx context.Context, input *CreateFolderInput) (*common.HumaAPIResponse[FolderDTO], error) {
 	userID := middleware.GetUserID(ctx)
 
-	err := gorm.G[models.Folder](postgres.Db).Create(ctx, &models.Folder{
+	folder := &models.Folder{
 		Name:        input.Body.Name,
 		CreatedByID: uint(userID),
-	})
+	}
+	err := gorm.G[models.Folder](postgres.Db).Create(ctx, folder)
 
 	if err != nil {
 		slog.Error("failed create folder", slog.String("error", err.Error()))
@@ -27,7 +28,8 @@ func CreateFolderHandler(ctx context.Context, input *CreateFolderInput) (*common
 	}
 
 	return common.NewHumaResponse(FolderDTO{
-		Name: input.Body.Name,
+		ID:   folder.ID,
+		Name: folder.Name,
 	}), nil
 }
 

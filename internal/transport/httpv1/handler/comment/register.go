@@ -27,4 +27,18 @@ func Register(router *huma.Group) {
 		Tags:    []string{"Comments"},
 		Summary: "Delete comment",
 	}, DeleteCommentHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodGet,
+		Path:    "/comments/{id}",
+		Tags:    []string{"Comments"},
+		Summary: "Get comment",
+	}, GetCommentHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodGet,
+		Path:    "/tasks/{task_id}/comments",
+		Tags:    []string{"Comments"},
+		Summary: "Get comments by task",
+	}, GetCommentsByTaskHandler)
 }

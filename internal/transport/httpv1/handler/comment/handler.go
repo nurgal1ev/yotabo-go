@@ -1,5 +1,6 @@
 package comment
 
+import "C"
 import (
 	"context"
 	"errors"
@@ -15,11 +16,14 @@ import (
 
 func CreateCommentHandler(ctx context.Context, input *CreateCommentInput) (*common.HumaAPIResponse[CommentDTO], error) {
 	userID := middleware.GetUserID(ctx)
-	err := gorm.G[models.Comment](postgres.Db).Create(ctx, &models.Comment{
+
+	comment := &models.Comment{
 		Message:  input.Body.Message,
 		AuthorID: uint(userID),
 		TaskID:   input.TaskID,
-	})
+	}
+
+	err := gorm.G[models.Comment](postgres.Db).Create(ctx, comment)
 
 	if err != nil {
 		slog.Error("failed create comment", slog.String("error", err.Error()))
@@ -27,9 +31,10 @@ func CreateCommentHandler(ctx context.Context, input *CreateCommentInput) (*comm
 	}
 
 	return common.NewHumaResponse(CommentDTO{
-		Message:  input.Body.Message,
-		AuthorID: uint(userID),
-		TaskID:   input.TaskID,
+		ID:       comment.ID,
+		Message:  comment.Message,
+		AuthorID: comment.AuthorID,
+		TaskID:   comment.TaskID,
 	}), nil
 }
 
@@ -74,4 +79,40 @@ func DeleteCommentHandler(ctx context.Context, input *DeleteCommentInput) (*comm
 	}
 
 	return common.NewHumaResponse[any](nil, "comment deleted successfully"), nil
+}
+
+func GetCommentHandler(ctx context.Context, input *GetCommentInput) (*common.HumaAPIResponse[CommentDTO], error) {
+	comment, err := gorm.G[models.Comment](postgres.Db).Where("id = ?", input.ID).First(ctx)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, huma.Error404NotFound("comment not found")
+		}
+	}
+
+	return common.NewHumaResponse(CommentDTO{
+		ID:       comment.ID,
+		Message:  comment.Message,
+		TaskID:   comment.TaskID,
+		AuthorID: comment.AuthorID,
+	}), nil
+}
+
+func GetCommentsByTaskHandler(ctx context.Context, input *GetCommentsByTaskInput) (*common.HumaAPIResponse[[]CommentDTO], error) {
+	comments, err := gorm.G[models.Comment](postgres.Db).Where("task_id = ?", input.TaskID).Find(ctx)
+	if err != nil {
+		slog.Error("failed get comments", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError(err.Error())
+	}
+
+	commentsDTOs := make([]CommentDTO, len(comments))
+	for i, comment := range comments {
+		commentsDTOs[i] = CommentDTO{
+			ID:       comment.ID,
+			Message:  comment.Message,
+			TaskID:   comment.TaskID,
+			AuthorID: comment.AuthorID,
+		}
+	}
+
+	return common.NewHumaResponse(commentsDTOs), nil
 }

@@ -44,7 +44,8 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*common.Hum
 }
 
 func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIResponse[TaskDTO], error) {
-	task, err := gorm.G[models.Task](postgres.Db).Preload("Subtasks", nil).Where("id = ?", input.ID).First(ctx)
+	userID := middleware.GetUserID(ctx)
+	task, err := gorm.G[models.Task](postgres.Db).Preload("Subtasks", nil).Where("id = ? AND created_by_id = ?", input.ID, userID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, huma.Error404NotFound("task not found")
@@ -130,7 +131,8 @@ func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*common.H
 }
 
 func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*common.HumaAPIResponse[TaskDTO], error) {
-	task, err := gorm.G[models.Task](postgres.Db).Where("id = ?", input.ID).First(ctx)
+	userID := middleware.GetUserID(ctx)
+	task, err := gorm.G[models.Task](postgres.Db).Where("id = ? AND created_by_id = ?", input.ID, userID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, huma.Error404NotFound("task not found")

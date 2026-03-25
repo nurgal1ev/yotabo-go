@@ -90,7 +90,7 @@ func LoginHandler(ctx context.Context, input *LoginInput) (*LoginOutput, error) 
 	return resp, nil
 }
 
-func GetUserHandler(ctx context.Context, input *GetUserInput) (*common.HumaAPIResponse[UserDTO], error) {
+func GetUserHandler(ctx context.Context) (*common.HumaAPIResponse[UserDTO], error) {
 	userID := middleware.GetUserID(ctx)
 	user, err := gorm.G[models.User](postgres.Db).Where("id = ?", userID).First(ctx)
 	if err != nil {

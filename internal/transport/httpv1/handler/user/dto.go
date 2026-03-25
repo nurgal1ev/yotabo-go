@@ -36,9 +36,6 @@ type UserDTO struct {
 	Username  string `json:"username"`
 	Email     string `json:"email"`
 }
-
-type GetUserInput struct{}
-
 type UpdateUserInput struct {
 	Body struct {
 		FirstName *string `json:"firstname"`

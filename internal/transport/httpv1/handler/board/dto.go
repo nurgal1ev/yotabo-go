@@ -14,7 +14,7 @@ type CreateBoardInput struct {
 type GetBoardInput struct {
 	ID uint `path:"id"`
 }
-type GetAllBoardsInput struct{}
+
 type DeleteBoardInput struct {
 	ID uint `path:"id"`
 }

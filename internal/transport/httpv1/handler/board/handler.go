@@ -51,7 +51,7 @@ func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*common.HumaAPI
 	}), nil
 }
 
-func GetAllBoardsHandler(ctx context.Context, input *GetAllBoardsInput) (*common.HumaAPIResponse[[]BoardDTO], error) {
+func GetAllBoardsHandler(ctx context.Context) (*common.HumaAPIResponse[[]BoardDTO], error) {
 	userID := middleware.GetUserID(ctx)
 
 	boards, err := gorm.G[models.Board](postgres.Db).Where("created_by_id = ?", userID).Find(ctx)

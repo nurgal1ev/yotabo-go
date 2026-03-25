@@ -93,7 +93,7 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIRe
 	}), nil
 }
 
-func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*common.HumaAPIResponse[[]TaskDTO], error) {
+func GetAllTasksHandler(ctx context.Context) (*common.HumaAPIResponse[[]TaskDTO], error) {
 	userID := middleware.GetUserID(ctx)
 
 	if userID == 0 {

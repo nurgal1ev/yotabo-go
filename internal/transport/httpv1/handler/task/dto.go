@@ -30,9 +30,6 @@ type CreateTaskInput struct {
 type GetTaskInput struct {
 	ID uint `path:"id"`
 }
-
-type GetAllTasksInput struct {
-}
 type UpdateTaskInput struct {
 	ID   uint `path:"id"`
 	Body struct {

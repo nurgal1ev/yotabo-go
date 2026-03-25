@@ -44,20 +44,19 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*common.Hum
 }
 
 func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIResponse[TaskDTO], error) {
-	userID := middleware.GetUserID(ctx)
-	task, err := gorm.G[models.Task](postgres.Db).Preload("Subtasks", nil).Where("id = ? AND created_by_id = ?", input.ID, userID).First(ctx)
+	task, err := gorm.G[models.Task](postgres.Db).Preload("Subtasks", nil).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, huma.Error404NotFound("task not found")
 		}
 		slog.Error("failed get task", slog.String("error", err.Error()))
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	subtasks, err := gorm.G[models.Subtask](postgres.Db).Where("task_id = ?", task.ID).Find(ctx)
 	if err != nil {
 		slog.Error("failed get subtasks", slog.String("error", err.Error()))
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	subtasksDTOs := make([]SubtasksDTO, len(subtasks))
@@ -72,7 +71,7 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIRe
 	comments, err := gorm.G[models.Comment](postgres.Db).Where("task_id = ?", task.ID).Find(ctx)
 	if err != nil {
 		slog.Error("failed get comments", slog.String("error", err.Error()))
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	commentsDTOs := make([]CommentsDTO, len(comments))
@@ -104,7 +103,7 @@ func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*common.H
 	tasks, err := gorm.G[models.Task](postgres.Db).Preload("Subtasks", nil).Where("created_by_id = ?", userID).Find(ctx)
 	if err != nil {
 		slog.Error("failed get all tasks", slog.String("error", err.Error()))
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	taskDTOs := make([]TaskDTO, len(tasks))
@@ -131,8 +130,7 @@ func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*common.H
 }
 
 func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*common.HumaAPIResponse[TaskDTO], error) {
-	userID := middleware.GetUserID(ctx)
-	task, err := gorm.G[models.Task](postgres.Db).Where("id = ? AND created_by_id = ?", input.ID, userID).First(ctx)
+	task, err := gorm.G[models.Task](postgres.Db).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, huma.Error404NotFound("task not found")
@@ -158,7 +156,7 @@ func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*common.Hum
 		Updates(ctx, task)
 
 	if err != nil {
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	return common.NewHumaResponse(TaskDTO{

@@ -58,13 +58,13 @@ func GetFolderHandler(ctx context.Context, input *GetFolderInput) (*common.HumaA
 			return nil, huma.Error404NotFound("folder not found")
 		}
 		slog.Error("failed get folder", slog.String("error", err.Error()))
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	boards, err := gorm.G[models.Board](postgres.Db).Where("folder_id = ?", folder.ID).Find(ctx)
 	if err != nil {
 		slog.Error("failed get all boards", slog.String("error", err.Error()))
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	boardDTOs := make([]FolderBoardDTO, len(boards))
@@ -87,7 +87,7 @@ func GetAllFoldersHandler(ctx context.Context, input *GetAllFoldersInput) (*comm
 	folders, err := gorm.G[models.Folder](postgres.Db).Preload("Boards", nil).Where("created_by_id = ?", userID).Find(ctx)
 	if err != nil {
 		slog.Error("failed get all folders", slog.String("error", err.Error()))
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	foldersDTOs := make([]FolderDTO, len(folders))
@@ -132,7 +132,7 @@ func UpdateFolderHandler(ctx context.Context, input *UpdateFolderInput) (*common
 		Updates(ctx, folder)
 
 	if err != nil {
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	return common.NewHumaResponse(FolderDTO{

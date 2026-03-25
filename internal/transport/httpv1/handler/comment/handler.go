@@ -101,7 +101,7 @@ func GetCommentsByTaskHandler(ctx context.Context, input *GetCommentsByTaskInput
 	comments, err := gorm.G[models.Comment](postgres.Db).Where("task_id = ?", input.TaskID).Find(ctx)
 	if err != nil {
 		slog.Error("failed get comments", slog.String("error", err.Error()))
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	commentsDTOs := make([]CommentDTO, len(comments))

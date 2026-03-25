@@ -42,7 +42,7 @@ func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*common.HumaAPI
 			return nil, huma.Error404NotFound("board not found")
 		}
 		slog.Error("failed get board", slog.String("error", err.Error()))
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	return common.NewHumaResponse(BoardDTO{
@@ -57,7 +57,7 @@ func GetAllBoardsHandler(ctx context.Context, input *GetAllBoardsInput) (*common
 	boards, err := gorm.G[models.Board](postgres.Db).Where("created_by_id = ?", userID).Find(ctx)
 	if err != nil {
 		slog.Error("failed get all boards", slog.String("error", err.Error()))
-		return nil, huma.Error500InternalServerError(err.Error())
+		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
 	boardDTOs := make([]BoardDTO, len(boards))

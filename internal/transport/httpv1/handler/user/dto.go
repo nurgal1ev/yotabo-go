@@ -28,3 +28,29 @@ type LoginOutput struct {
 		AccessToken string `json:"accessToken"`
 	}
 }
+
+type UserDTO struct {
+	ID        uint   `json:"id"`
+	FirstName string `json:"firstname"`
+	LastName  string `json:"lastname"`
+	Username  string `json:"username"`
+	Email     string `json:"email"`
+}
+
+type GetUserInput struct{}
+
+type UpdateUserInput struct {
+	Body struct {
+		FirstName *string `json:"firstname"`
+		LastName  *string `json:"lastname"`
+		Username  *string `json:"username"`
+		Email     *string `json:"email"`
+	}
+}
+
+type ChangePasswordInput struct {
+	Body struct {
+		CurrentPassword string `json:"currentPassword" minLength:"7" maxLength:"12"`
+		NewPassword     string `json:"newPassword" minLength:"7" maxLength:"12"`
+	}
+}

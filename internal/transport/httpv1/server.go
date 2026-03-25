@@ -54,6 +54,7 @@ func StartServer() {
 	folder.Register(router)
 	subtask.Register(router)
 	comment.Register(router)
+	user.Register(router)
 
 	if err := http.ListenAndServe(":8080", r); err != nil {
 		panic(err)

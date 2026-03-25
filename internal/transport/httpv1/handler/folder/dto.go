@@ -20,7 +20,7 @@ type DeleteFolderInput struct {
 type GetFolderInput struct {
 	ID uint `path:"id"`
 }
-
+type GetAllFoldersInput struct{}
 type UpdateFolderInput struct {
 	ID   uint `path:"id"`
 	Body struct {

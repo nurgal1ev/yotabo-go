@@ -81,7 +81,7 @@ func GetFolderHandler(ctx context.Context, input *GetFolderInput) (*common.HumaA
 	}), nil
 }
 
-func GetAllFoldersHandler(ctx context.Context) (*common.HumaAPIResponse[[]FolderDTO], error) {
+func GetAllFoldersHandler(ctx context.Context, input *GetAllFoldersInput) (*common.HumaAPIResponse[[]FolderDTO], error) {
 	userID := middleware.GetUserID(ctx)
 
 	folders, err := gorm.G[models.Folder](postgres.Db).Preload("Boards", nil).Where("created_by_id = ?", userID).Find(ctx)

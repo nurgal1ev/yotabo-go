@@ -19,7 +19,7 @@ type User struct {
 type Task struct {
 	gorm.Model
 	Name        string
-	Description string
+	Description *string
 	Status      string
 	Priority    string
 

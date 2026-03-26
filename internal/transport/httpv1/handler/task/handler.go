@@ -142,7 +142,7 @@ func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*common.Hum
 		task.Name = *input.Body.Name
 	}
 	if input.Body.Description != nil {
-		task.Description = *input.Body.Description
+		task.Description = input.Body.Description
 	}
 	if input.Body.Status != nil {
 		task.Status = *input.Body.Status

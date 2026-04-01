@@ -29,6 +29,9 @@ type Task struct {
 	UpdatedByID uint
 	UpdatedBy   *User `gorm:"foreignKey:UpdatedByID"`
 
+	BoardID uint
+	Board   Board
+
 	SubtaskID *uint
 	Subtasks  []Subtask
 
@@ -77,4 +80,13 @@ type Comment struct {
 	Author   User `gorm:"foreignKey:AuthorID"`
 
 	Message string
+}
+
+type BoardMember struct {
+	gorm.Model
+	BoardID uint
+	UserID  uint
+
+	Board Board `gorm:"foreignKey:BoardID"`
+	User  User  `gorm:"foreignKey:UserID"`
 }

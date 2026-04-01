@@ -23,6 +23,7 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*common.Hum
 		Description: input.Body.Description,
 		Status:      input.Body.Status,
 		Priority:    input.Body.Priority,
+		BoardID:     input.Body.BoardID,
 		CreatedByID: uint(userID),
 		UpdatedByID: uint(userID),
 	}
@@ -40,6 +41,7 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*common.Hum
 		Description: task.Description,
 		Status:      task.Status,
 		Priority:    task.Priority,
+		BoardID:     task.BoardID,
 	}), nil
 }
 
@@ -90,6 +92,7 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIRe
 		Priority:    task.Priority,
 		Subtasks:    subtasksDTOs,
 		Comments:    commentsDTOs,
+		BoardID:     task.BoardID,
 	}), nil
 }
 
@@ -123,6 +126,7 @@ func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*common.H
 			Status:      task.Status,
 			Priority:    task.Priority,
 			Subtasks:    subtaskDTOs,
+			BoardID:     task.BoardID,
 		}
 	}
 

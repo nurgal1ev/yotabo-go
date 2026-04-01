@@ -8,6 +8,7 @@ type TaskDTO struct {
 	Priority    string        `json:"priority" enum:"easy,medium,hard"`
 	Subtasks    []SubtasksDTO `json:"subtasks"`
 	Comments    []CommentsDTO `json:"comments"`
+	BoardID     uint
 }
 type SubtasksDTO struct {
 	ID        uint   `json:"id"`
@@ -25,6 +26,7 @@ type CreateTaskInput struct {
 		Description *string `json:"description" maxLength:"10000" pattern:"^[a-zA-Zа-яА-Я0-9\\s]*$"`
 		Status      string  `json:"status" enum:"backlog,in_progress,review,done"`
 		Priority    string  `json:"priority" enum:"easy,medium,hard"`
+		BoardID     uint    `json:"board_id"`
 	}
 }
 type GetTaskInput struct {

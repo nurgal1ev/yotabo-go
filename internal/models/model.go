@@ -50,7 +50,8 @@ type Board struct {
 	FolderID *uint
 	Folder   Folder `gorm:"foreignKey:FolderID"`
 
-	Members []BoardMember
+	Members     []BoardMember
+	Invitations []Invitation
 }
 
 type Folder struct {
@@ -91,4 +92,16 @@ type BoardMember struct {
 
 	Board Board `gorm:"foreignKey:BoardID"`
 	User  User  `gorm:"foreignKey:UserID"`
+}
+
+type Invitation struct {
+	gorm.Model
+	BoardID   uint
+	InviterID uint
+	UserID    uint
+	Status    string `gorm:"default:pending"`
+
+	Board   Board `gorm:"foreignKey:BoardID"`
+	Inviter User  `gorm:"foreignKey:InviterID"`
+	User    User  `gorm:"foreignKey:UserID"`
 }

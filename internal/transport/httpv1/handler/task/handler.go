@@ -98,12 +98,13 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIRe
 
 func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*common.HumaAPIResponse[[]TaskDTO], error) {
 	userID := middleware.GetUserID(ctx)
+	query := gorm.G[models.Task](postgres.Db).Preload("Subtasks", nil).Where("created_by_id = ?", userID)
 
-	if userID == 0 {
-		return nil, huma.Error401Unauthorized("unauthorized")
+	if input.BoardID != nil {
+		query = query.Where("board_id = ?", *input.BoardID)
 	}
 
-	tasks, err := gorm.G[models.Task](postgres.Db).Preload("Subtasks", nil).Where("created_by_id = ?", userID).Find(ctx)
+	tasks, err := query.Find(ctx)
 	if err != nil {
 		slog.Error("failed get all tasks", slog.String("error", err.Error()))
 		return nil, huma.Error500InternalServerError("internal server error")

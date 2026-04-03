@@ -34,6 +34,7 @@ type GetTaskInput struct {
 }
 
 type GetAllTasksInput struct {
+	BoardID *uint `query:"board_id" required:"false"`
 }
 
 type UpdateTaskInput struct {

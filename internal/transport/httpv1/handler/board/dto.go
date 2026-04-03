@@ -1,5 +1,7 @@
 package board
 
+import "github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
+
 type BoardDTO struct {
 	ID       uint   `json:"id"`
 	Name     string `json:"name"`
@@ -15,7 +17,7 @@ type GetBoardInput struct {
 	ID uint `path:"id"`
 }
 type GetAllBoardsInput struct {
-	FolderID *uint `query:"folder_id" required:"false"`
+	FolderID common.OptionalParam[uint] `query:"folder_id"`
 }
 type DeleteBoardInput struct {
 	ID uint `path:"id"`

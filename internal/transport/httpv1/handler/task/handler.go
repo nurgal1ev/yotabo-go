@@ -100,8 +100,8 @@ func GetAllTasksHandler(ctx context.Context, input *GetAllTasksInput) (*common.H
 	userID := middleware.GetUserID(ctx)
 	query := gorm.G[models.Task](postgres.Db).Preload("Subtasks", nil).Where("created_by_id = ?", userID)
 
-	if input.BoardID != nil {
-		query = query.Where("board_id = ?", *input.BoardID)
+	if input.BoardID.IsSet {
+		query = query.Where("board_id = ?", input.BoardID.Value)
 	}
 
 	tasks, err := query.Find(ctx)

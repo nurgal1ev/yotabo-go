@@ -55,8 +55,8 @@ func GetAllBoardsHandler(ctx context.Context, input *GetAllBoardsInput) (*common
 	userID := middleware.GetUserID(ctx)
 	query := gorm.G[models.Board](postgres.Db).Where("created_by_id = ?", userID)
 
-	if input.FolderID != nil {
-		query = query.Where("folder_id = ?", *input.FolderID)
+	if input.FolderID.IsSet {
+		query = query.Where("folder_id = ?", input.FolderID.Value)
 	}
 
 	boards, err := query.Find(ctx)

@@ -14,7 +14,9 @@ type CreateBoardInput struct {
 type GetBoardInput struct {
 	ID uint `path:"id"`
 }
-type GetAllBoardsInput struct{}
+type GetAllBoardsInput struct {
+	FolderID *uint `query:"folder_id" required:"false"`
+}
 type DeleteBoardInput struct {
 	ID uint `path:"id"`
 }

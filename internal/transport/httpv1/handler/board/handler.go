@@ -53,8 +53,13 @@ func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*common.HumaAPI
 
 func GetAllBoardsHandler(ctx context.Context, input *GetAllBoardsInput) (*common.HumaAPIResponse[[]BoardDTO], error) {
 	userID := middleware.GetUserID(ctx)
+	query := gorm.G[models.Board](postgres.Db).Where("created_by_id = ?", userID)
 
-	boards, err := gorm.G[models.Board](postgres.Db).Where("created_by_id = ?", userID).Find(ctx)
+	if input.FolderID != nil {
+		query = query.Where("folder_id = ?", *input.FolderID)
+	}
+
+	boards, err := query.Find(ctx)
 	if err != nil {
 		slog.Error("failed get all boards", slog.String("error", err.Error()))
 		return nil, huma.Error500InternalServerError("internal server error")

@@ -1,5 +1,7 @@
 package task
 
+import "github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
+
 type TaskDTO struct {
 	ID          uint          `json:"id"`
 	Name        string        `json:"name" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
@@ -34,6 +36,7 @@ type GetTaskInput struct {
 }
 
 type GetAllTasksInput struct {
+	BoardID common.OptionalParam[uint] `query:"board_id"`
 }
 
 type UpdateTaskInput struct {

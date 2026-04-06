@@ -70,6 +70,7 @@ func GetFolderHandler(ctx context.Context, input *GetFolderInput) (*common.HumaA
 	boardDTOs := make([]FolderBoardDTO, len(boards))
 	for i, board := range boards {
 		boardDTOs[i] = FolderBoardDTO{
+			ID:   board.ID,
 			Name: board.Name,
 		}
 	}

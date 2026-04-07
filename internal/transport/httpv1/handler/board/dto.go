@@ -53,4 +53,6 @@ type GetInvitationInput struct{}
 type AcceptInvitationInput struct {
 	ID uint `path:"id"`
 }
-type RejectInvitationInput struct{}
+type RejectInvitationInput struct {
+	ID uint `path:"id"`
+}

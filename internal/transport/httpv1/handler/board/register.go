@@ -62,4 +62,11 @@ func Register(router *huma.Group) {
 		Tags:    []string{"Invitations"},
 		Summary: "Accept invitation",
 	}, AcceptInviteHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodPost,
+		Path:    "/invitations/{id}/reject",
+		Tags:    []string{"Invitations"},
+		Summary: "Reject invitation",
+	}, RejectInviteHandler)
 }

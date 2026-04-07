@@ -280,3 +280,29 @@ func AcceptInviteHandler(ctx context.Context, input *AcceptInvitationInput) (*co
 
 	return common.NewHumaResponse[any](nil, "accept success"), nil
 }
+
+func RejectInviteHandler(ctx context.Context, input *RejectInvitationInput) (*common.HumaAPIResponse[any], error) {
+	userID := middleware.GetUserID(ctx)
+	var invitation models.Invitation
+
+	err := postgres.Db.Preload("Board").Where("id = ? AND user_id = ?", input.ID, userID).First(&invitation).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, huma.Error404NotFound("invitation not found")
+		}
+		slog.Error("failed get invite", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError("internal server error")
+	}
+
+	if invitation.Status != "pending" {
+		return nil, huma.Error400BadRequest("invitation already processed")
+	}
+
+	err = postgres.Db.Model(&invitation).Update("status", "rejected").Error
+	if err != nil {
+		slog.Error("failed update status", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError("internal server error")
+	}
+
+	return common.NewHumaResponse[any](nil, "reject success"), nil
+}

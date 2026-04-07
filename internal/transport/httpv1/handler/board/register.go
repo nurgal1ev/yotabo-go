@@ -41,4 +41,25 @@ func Register(router *huma.Group) {
 		Tags:    []string{"Board"},
 		Summary: "Update board",
 	}, UpdateBoardHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodPost,
+		Path:    "/boards/{board_id}/invitations",
+		Tags:    []string{"Invitations"},
+		Summary: "Invite user to board",
+	}, CreateInviteHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodGet,
+		Path:    "/invitations",
+		Tags:    []string{"Invitations"},
+		Summary: "Get my invitations",
+	}, GetInviteHandler)
+
+	huma.Register(router, huma.Operation{
+		Method:  http.MethodPost,
+		Path:    "/invitations/{id}/accept",
+		Tags:    []string{"Invitations"},
+		Summary: "Accept invitation",
+	}, AcceptInviteHandler)
 }

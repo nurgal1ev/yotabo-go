@@ -47,3 +47,10 @@ type CreateInvitationInput struct {
 		Username string `json:"username"`
 	}
 }
+
+type GetInvitationInput struct{}
+
+type AcceptInvitationInput struct {
+	ID uint `path:"id"`
+}
+type RejectInvitationInput struct{}

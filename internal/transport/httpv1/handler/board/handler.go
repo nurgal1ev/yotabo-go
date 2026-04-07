@@ -208,3 +208,75 @@ func CreateInviteHandler(ctx context.Context, input *CreateInvitationInput) (*co
 		CreatedAt: invitation.CreatedAt.Format(time.RFC3339),
 	}), nil
 }
+
+func GetInviteHandler(ctx context.Context, input *GetInvitationInput) (*common.HumaAPIResponse[[]InvitationDTO], error) {
+	userID := middleware.GetUserID(ctx)
+	var invitations []models.Invitation
+	err := postgres.Db.Where("user_id = ? AND status = ?", userID, "pending").Preload("Board").Preload("Inviter").Find(&invitations).Error
+	if err != nil {
+		slog.Error("failed get invite", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError("internal server error")
+	}
+	result := make([]InvitationDTO, len(invitations))
+	for i, invitation := range invitations {
+		result[i] = InvitationDTO{
+			ID:        invitation.ID,
+			BoardID:   invitation.BoardID,
+			BoardName: invitation.Board.Name,
+			InviterID: invitation.InviterID,
+			Inviter:   invitation.Inviter.Username,
+			Status:    invitation.Status,
+			CreatedAt: invitation.CreatedAt.Format(time.RFC3339),
+		}
+	}
+
+	return common.NewHumaResponse(result), nil
+}
+
+func AcceptInviteHandler(ctx context.Context, input *AcceptInvitationInput) (*common.HumaAPIResponse[any], error) {
+	userID := middleware.GetUserID(ctx)
+	invitationID := input.ID
+
+	var invitation models.Invitation
+	err := postgres.Db.Preload("Board").Where("id = ? AND user_id = ?", invitationID, userID).First(&invitation).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, huma.Error404NotFound("invitation not found")
+		}
+		slog.Error("failed get invite", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError("internal server error")
+	}
+
+	if invitation.Status != "pending" {
+		return nil, huma.Error400BadRequest("invitation already processed")
+	}
+
+	var existingMember models.BoardMember
+	err = postgres.Db.Where("board_id = ? AND user_id = ?", invitation.BoardID, userID).First(&existingMember).Error
+	if err == nil {
+		return nil, huma.Error409Conflict("user is already a member of this board")
+	}
+	if !errors.Is(err, gorm.ErrRecordNotFound) {
+		slog.Error("failed check membership", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError("internal server error")
+	}
+
+	boardMember := models.BoardMember{
+		BoardID: invitation.BoardID,
+		UserID:  uint(userID),
+	}
+
+	err = postgres.Db.Create(&boardMember).Error
+	if err != nil {
+		slog.Error("failed accept invite", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError("internal server error")
+	}
+
+	err = postgres.Db.Model(&invitation).Update("status", "accepted").Error
+	if err != nil {
+		slog.Error("failed update status", slog.String("error", err.Error()))
+		return nil, huma.Error500InternalServerError("internal server error")
+	}
+
+	return common.NewHumaResponse[any](nil, "accept success"), nil
+}

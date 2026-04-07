@@ -84,9 +84,25 @@ type Comment struct {
 
 type BoardMember struct {
 	gorm.Model
-	BoardID uint
-	UserID  uint
 
-	Board Board `gorm:"foreignKey:BoardID"`
-	User  User  `gorm:"foreignKey:UserID"`
+	BoardID uint
+	Board   Board `gorm:"foreignKey:BoardID"`
+
+	UserID uint
+	User   User `gorm:"foreignKey:UserID"`
+}
+
+type Invitation struct {
+	gorm.Model
+
+	BoardID uint
+	Board   Board `gorm:"foreignKey:BoardID"`
+
+	InviterID uint
+	Inviter   User `gorm:"foreignKey:InviterID"`
+
+	UserID uint
+	User   User `gorm:"foreignKey:UserID"`
+
+	Status string
 }

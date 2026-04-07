@@ -29,3 +29,30 @@ type UpdateBoardInput struct {
 		FolderID *uint   `json:"folder_id"`
 	}
 }
+
+// invite
+type InvitationDTO struct {
+	ID        uint   `json:"id"`
+	BoardID   uint   `json:"boardId"`
+	BoardName string `json:"boardName"`
+	InviterID uint   `json:"inviterId"`
+	Inviter   string `json:"inviter"`
+	Status    string `json:"status"`
+	CreatedAt string `json:"createdAt"`
+}
+
+type CreateInvitationInput struct {
+	BoardID uint `path:"board_id"`
+	Body    struct {
+		Username string `json:"username"`
+	}
+}
+
+type GetInvitationInput struct{}
+
+type AcceptInvitationInput struct {
+	ID uint `path:"id"`
+}
+type RejectInvitationInput struct {
+	ID uint `path:"id"`
+}

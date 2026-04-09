@@ -3,9 +3,15 @@ package board
 import "github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
 
 type BoardDTO struct {
+	ID       uint                `json:"id"`
+	Name     string              `json:"name"`
+	FolderID *uint               `json:"folder_id"`
+	Members  []MembersInBoardDTO `json:"members"`
+}
+
+type MembersInBoardDTO struct {
 	ID       uint   `json:"id"`
-	Name     string `json:"name"`
-	FolderID *uint  `json:"folder_id"`
+	Username string `json:"username"`
 }
 type CreateBoardInput struct {
 	Body struct {

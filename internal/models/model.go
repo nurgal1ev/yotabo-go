@@ -49,6 +49,9 @@ type Board struct {
 
 	FolderID *uint
 	Folder   Folder `gorm:"foreignKey:FolderID"`
+
+	MemberID *uint
+	Members  []BoardMember
 }
 
 type Folder struct {

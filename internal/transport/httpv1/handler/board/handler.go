@@ -47,9 +47,26 @@ func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*common.HumaAPI
 		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
+	var members []models.BoardMember
+	err = postgres.Db.Where("board_id = ?", board.ID).Preload("User").Find(&members).Error
+	if err != nil {
+		slog.Error("failed get members for board", slog.String("board_id", string(rune(board.ID))), slog.String("error", err.Error()))
+		members = []models.BoardMember{}
+	}
+
+	membersDTOs := make([]MembersInBoardDTO, len(members))
+	for i, member := range members {
+		membersDTOs[i] = MembersInBoardDTO{
+			ID:       member.User.ID,
+			Username: member.User.Username,
+		}
+	}
+
 	return common.NewHumaResponse(BoardDTO{
-		ID:   input.ID,
-		Name: board.Name,
+		ID:       board.ID,
+		Name:     board.Name,
+		FolderID: board.FolderID,
+		Members:  membersDTOs,
 	}), nil
 }
 
@@ -69,10 +86,26 @@ func GetAllBoardsHandler(ctx context.Context, input *GetAllBoardsInput) (*common
 
 	boardDTOs := make([]BoardDTO, len(boards))
 	for i, board := range boards {
+		var members []models.BoardMember
+		err = postgres.Db.Where("board_id = ?", board.ID).Preload("User").Find(&members).Error
+		if err != nil {
+			slog.Error("failed get members for board", slog.String("board_id", string(rune(board.ID))), slog.String("error", err.Error()))
+			members = []models.BoardMember{}
+		}
+
+		membersDTOs := make([]MembersInBoardDTO, len(members))
+		for j, member := range members {
+			membersDTOs[j] = MembersInBoardDTO{
+				ID:       member.User.ID,
+				Username: member.User.Username,
+			}
+		}
+
 		boardDTOs[i] = BoardDTO{
 			ID:       board.ID,
 			Name:     board.Name,
 			FolderID: board.FolderID,
+			Members:  membersDTOs,
 		}
 	}
 

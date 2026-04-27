@@ -10,7 +10,7 @@ WORKDIR /app
 
 RUN go install github.com/air-verse/air@v1.63.0
 
-COPY deployment ..
+COPY deployment .
 
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /build/app ./cmd/app
 

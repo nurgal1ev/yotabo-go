@@ -9,7 +9,7 @@ services:
     ports:
       - "0.0.0.0:8080:8080"
     env_file:
-      - .env
+      - ../.env
     depends_on:
       - postgres
     restart: unless-stopped

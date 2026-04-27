@@ -20,7 +20,7 @@ services:
   app:
     build:
       context: ../
-      dockerfile: ./deployment/Dockerfile
+      dockerfile: ../Dockerfile
       target: runner_dev
     volumes:
       - ../:/app

@@ -1,6 +1,8 @@
 package models
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -22,6 +24,7 @@ type Task struct {
 	Description *string
 	Status      string
 	Priority    string
+	DueDate     *time.Time
 
 	CreatedByID uint
 	CreatedBy   User `gorm:"foreignKey:CreatedByID"`

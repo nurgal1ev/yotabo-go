@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log/slog"
+	"time"
 
 	"github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
 
@@ -18,21 +19,37 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*common.Hum
 	userID := middleware.GetUserID(ctx)
 	slog.Info("create task user", "userID", userID)
 
+	// Парсинг даты дедлайна, если она передана
+	var dueTime *time.Time
+	if input.Body.DueDate != nil && *input.Body.DueDate != "" {
+		parsed, err := time.Parse("2006-01-02", *input.Body.DueDate)
+		if err != nil {
+			return nil, huma.Error400BadRequest("invalid date format, expected YYYY-MM-DD")
+		}
+		dueTime = &parsed
+	}
+
 	task := &models.Task{
 		Name:        input.Body.Name,
 		Description: input.Body.Description,
 		Status:      input.Body.Status,
 		Priority:    input.Body.Priority,
+		DueDate:     dueTime,
 		BoardID:     input.Body.BoardID,
 		CreatedByID: uint(userID),
 		UpdatedByID: uint(userID),
 	}
 
 	err := gorm.G[models.Task](postgres.Db).Create(ctx, task)
-
 	if err != nil {
 		slog.Error("failed create task", slog.String("error", err.Error()))
 		return nil, err
+	}
+
+	var dueDateStr *string
+	if task.DueDate != nil {
+		s := task.DueDate.Format("2006-01-02")
+		dueDateStr = &s
 	}
 
 	return common.NewHumaResponse(TaskDTO{
@@ -42,6 +59,7 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*common.Hum
 		Status:      task.Status,
 		Priority:    task.Priority,
 		BoardID:     task.BoardID,
+		DueDate:     dueDateStr,
 	}), nil
 }
 
@@ -84,12 +102,19 @@ func GetTaskHandler(ctx context.Context, input *GetTaskInput) (*common.HumaAPIRe
 		}
 	}
 
+	var dueDateStr *string
+	if task.DueDate != nil {
+		s := task.DueDate.Format("2006-01-02")
+		dueDateStr = &s
+	}
+
 	return common.NewHumaResponse(TaskDTO{
 		ID:          task.ID,
 		Name:        task.Name,
 		Description: task.Description,
 		Status:      task.Status,
 		Priority:    task.Priority,
+		DueDate:     dueDateStr,
 		Subtasks:    subtasksDTOs,
 		Comments:    commentsDTOs,
 		BoardID:     task.BoardID,
@@ -156,6 +181,18 @@ func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*common.Hum
 		task.Priority = *input.Body.Priority
 	}
 
+	if input.Body.DueDate != nil {
+		if *input.Body.DueDate == "" {
+			task.DueDate = nil
+		} else {
+			parsed, err := time.Parse("2006-01-02", *input.Body.DueDate)
+			if err != nil {
+				return nil, huma.Error400BadRequest("invalid date format, expected YYYY-MM-DD")
+			}
+			task.DueDate = &parsed
+		}
+	}
+
 	_, err = gorm.G[models.Task](postgres.Db).
 		Where("id = ?", input.ID).
 		Updates(ctx, task)
@@ -164,11 +201,20 @@ func UpdateTaskHandler(ctx context.Context, input *UpdateTaskInput) (*common.Hum
 		return nil, huma.Error500InternalServerError("internal server error")
 	}
 
+	var dueDateStr *string
+	if task.DueDate != nil {
+		s := task.DueDate.Format("2006-01-02")
+		dueDateStr = &s
+	}
+
 	return common.NewHumaResponse(TaskDTO{
+		ID:          task.ID,
 		Name:        task.Name,
 		Description: task.Description,
 		Status:      task.Status,
 		Priority:    task.Priority,
+		DueDate:     dueDateStr,
+		BoardID:     task.BoardID,
 	}), nil
 }
 

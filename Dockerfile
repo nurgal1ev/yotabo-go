@@ -8,10 +8,9 @@ FROM base AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
-RUN go mod download
+RUN go install github.com/air-verse/air@v1.63.0
 
-COPY . .
+COPY deployment ..
 
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o /build/app ./cmd/app
 
@@ -27,7 +26,7 @@ FROM base AS runner_dev
 
 WORKDIR /app
 
-COPY . .
+COPY deployment .
 
 COPY --from=builder /build/app /app
 COPY --from=builder /go/bin/air /usr/local/bin/air

@@ -19,7 +19,6 @@ func CreateTaskHandler(ctx context.Context, input *CreateTaskInput) (*common.Hum
 	userID := middleware.GetUserID(ctx)
 	slog.Info("create task user", "userID", userID)
 
-	// Парсинг даты дедлайна, если она передана
 	var dueTime *time.Time
 	if input.Body.DueDate != nil && *input.Body.DueDate != "" {
 		parsed, err := time.Parse("2006-01-02", *input.Body.DueDate)

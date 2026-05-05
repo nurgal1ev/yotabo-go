@@ -17,11 +17,20 @@ import (
 // CRUD
 func CreateBoardHandler(ctx context.Context, input *CreateBoardInput) (*common.HumaAPIResponse[BoardDTO], error) {
 	userID := middleware.GetUserID(ctx)
+	var dueTime *time.Time
+	if input.Body.DueDate != nil && *input.Body.DueDate != "" {
+		parsed, err := time.Parse("2006-01-02", *input.Body.DueDate)
+		if err != nil {
+			return nil, huma.Error400BadRequest("invalid date format, expected YYYY-MM-DD")
+		}
+		dueTime = &parsed
+	}
 
 	board := &models.Board{
 		Name:        input.Body.Name,
 		CreatedByID: uint(userID),
 		FolderID:    input.Body.FolderID,
+		DueDate:     dueTime,
 	}
 
 	err := gorm.G[models.Board](postgres.Db).Create(ctx, board)
@@ -38,7 +47,7 @@ func CreateBoardHandler(ctx context.Context, input *CreateBoardInput) (*common.H
 }
 
 func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*common.HumaAPIResponse[BoardDTO], error) {
-	board, err := gorm.G[models.Board](postgres.Db).Where("id = ?", input.ID).First(ctx)
+	board, err := gorm.G[models.Board](postgres.Db).Preload("CreatedBy", nil).Where("id = ?", input.ID).First(ctx)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, huma.Error404NotFound("board not found")
@@ -62,11 +71,23 @@ func GetBoardHandler(ctx context.Context, input *GetBoardInput) (*common.HumaAPI
 		}
 	}
 
+	var dueDateStr *string
+	if board.DueDate != nil {
+		s := board.DueDate.Format("2006-01-02")
+		dueDateStr = &s
+	}
 	return common.NewHumaResponse(BoardDTO{
 		ID:       board.ID,
 		Name:     board.Name,
 		FolderID: board.FolderID,
-		Members:  membersDTOs,
+		CreatedBy: UserToBoardDTO{
+			ID:        board.CreatedBy.ID,
+			FirstName: board.CreatedBy.FirstName,
+			LastName:  board.CreatedBy.LastName,
+		},
+		DueDate:   dueDateStr,
+		CreatedAt: board.CreatedAt.Format(time.RFC3339),
+		Members:   membersDTOs,
 	}), nil
 }
 

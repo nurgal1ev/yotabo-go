@@ -50,6 +50,8 @@ type Board struct {
 	CreatedByID uint
 	CreatedBy   User
 
+	DueDate *time.Time
+
 	FolderID *uint
 	Folder   Folder `gorm:"foreignKey:FolderID"`
 

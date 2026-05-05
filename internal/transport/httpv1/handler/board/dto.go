@@ -3,10 +3,19 @@ package board
 import "github.com/nurgal1ev/yotabo-go/internal/transport/httpv1/handler/common"
 
 type BoardDTO struct {
-	ID       uint                `json:"id"`
-	Name     string              `json:"name"`
-	FolderID *uint               `json:"folder_id"`
-	Members  []MembersInBoardDTO `json:"members"`
+	ID        uint                `json:"id"`
+	Name      string              `json:"name"`
+	FolderID  *uint               `json:"folder_id"`
+	CreatedBy UserToBoardDTO      `json:"created_by"`
+	DueDate   *string             `json:"dueDate,omitempty" format:"date"`
+	CreatedAt string              `json:"createdAt"`
+	Members   []MembersInBoardDTO `json:"members"`
+}
+
+type UserToBoardDTO struct {
+	ID        uint   `json:"id"`
+	FirstName string `json:"firstName"`
+	LastName  string `json:"lastName"`
 }
 
 type MembersInBoardDTO struct {
@@ -15,8 +24,9 @@ type MembersInBoardDTO struct {
 }
 type CreateBoardInput struct {
 	Body struct {
-		Name     string `json:"name" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
-		FolderID *uint  `json:"folder_id,omitempty"`
+		Name     string  `json:"name" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
+		FolderID *uint   `json:"folder_id,omitempty"`
+		DueDate  *string `json:"dueDate,omitempty" format:"date"`
 	}
 }
 type GetBoardInput struct {

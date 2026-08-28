@@ -45,7 +45,7 @@ type UpdateTaskInput struct {
 	ID   uint `path:"id"`
 	Body struct {
 		Name        *string `json:"name,omitempty" minLength:"1" maxLength:"55" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
-		Description *string `json:"description,omitempty" maxLength:"10000" pattern:"^[a-zA-Zа-яА-Я0-9\\s]+$"`
+		Description *string `json:"description,omitempty" maxLength:"10000" pattern:"^[\\p{L}\\p{N}\\p{P}\\p{Z}\\n\\r]+$"`
 		Status      *string `json:"status,omitempty" enum:"backlog,in_progress,review,done"`
 		Priority    *string `json:"priority,omitempty" enum:"easy,medium,hard"`
 		DueDate     *string `json:"dueDate,omitempty"`
